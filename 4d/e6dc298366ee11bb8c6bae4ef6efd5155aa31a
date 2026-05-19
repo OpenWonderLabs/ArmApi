@@ -1,0 +1,47 @@
+README.md
+  s_c2c79f3ef6f6e3::t_6d2131e7d9533a 175,179,181
+  s_c2c79f3ef6f6e3::t_53ee5dd2007233 33-34,38-39
+  s_c2c79f3ef6f6e3::t_dddc95ad926055 111,114-120
+  s_c2c79f3ef6f6e3::t_e95979f88ce1f5 35-37
+  s_c2c79f3ef6f6e3::t_477fdd995ab909 125,127,129-130,132,134-136,139,141,144-147
+  s_c2c79f3ef6f6e3::t_f12a95728e5514 707
+  s_c2c79f3ef6f6e3::t_ecb11e95027499 878
+c++/README.md
+  s_c2c79f3ef6f6e3::t_629ec74c42518c 3-32
+c/README.md
+  s_c2c79f3ef6f6e3::t_b3417fd08f3db6 1-6,10-31
+  s_c2c79f3ef6f6e3::t_ce2df709a77829 8
+c/windows/lib/cmake/oneroarm/oneroarmConfig.cmake
+  s_c2c79f3ef6f6e3::t_fcc718530b3b02 4-11
+demo/CMakeLists.txt
+  s_c2c79f3ef6f6e3::t_2823c201735e85 11
+python/onero_arm/__init__.py
+  s_c2c79f3ef6f6e3::t_2f6e909e91fa9e 1-4
+python/README.md
+  s_c2c79f3ef6f6e3::t_e01af800d1c05b 3-4,8-34
+  s_c2c79f3ef6f6e3::t_ddeb9cf1985c65 7
+  s_c2c79f3ef6f6e3::t_79c24b197781fe 37
+c/linux/lib/cmake/oneroarm/oneroarmConfig.cmake
+  s_c2c79f3ef6f6e3::t_cceb6947948682 4-11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10",
+  "base_commit_sha": "4de6dc298366ee11bb8c6bae4ef6efd5155aa31a",
+  "prompts": {},
+  "humans": {
+    "h_c9d7340f891f95": {
+      "author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  },
+  "sessions": {
+    "s_c2c79f3ef6f6e3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0a4e2632-0f80-4005-9996-95b8bd228a94",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  }
+}
