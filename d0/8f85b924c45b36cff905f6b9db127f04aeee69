@@ -1,0 +1,16 @@
+C_API/Linux-x86_64/oneroarm_api_c-1.0.0-Linux/include/onero_api/onero_define.h
+  h_c9d7340f891f95 13-17,19-23,25-27,29-30,32,51-52
+C_API/Windows-x86_64/oneroarm_api_c-1.0.0-win64/include/onero_api/onero_define.h
+  h_c9d7340f891f95 14-15,17-18,20-22,24-25,27,46-47
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10",
+  "base_commit_sha": "d08f85b924c45b36cff905f6b9db127f04aeee69",
+  "prompts": {},
+  "humans": {
+    "h_c9d7340f891f95": {
+      "author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  }
+}
