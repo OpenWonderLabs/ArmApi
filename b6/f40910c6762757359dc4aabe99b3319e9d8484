@@ -1,0 +1,36 @@
+c/README.md
+  s_c992517a581cc4::t_2b7705e09a5fef 36
+  s_c992517a581cc4::t_653ec005bd1f24 39
+  s_c992517a581cc4::t_335038a6948deb 23
+  s_c992517a581cc4::t_7d0c2dae90147d 15,17-18
+  s_c992517a581cc4::t_6c4183cdad1a59 3
+c++/README.md
+  s_c992517a581cc4::t_db6ca44fa4994d 19,22,25
+  s_c992517a581cc4::t_bfdde832afd513 32
+demo/README.md
+  s_c992517a581cc4::t_596dfb18a4beb8 31
+demo/CMakeLists.txt
+  s_c992517a581cc4::t_3ce76020442894 22,25
+README.md
+  s_c992517a581cc4::t_25c47f326734e9 181
+  s_c992517a581cc4::t_de5e3f37171749 287
+  s_c992517a581cc4::t_1e85a3de6d3c38 169
+  s_c992517a581cc4::t_b66cc8d2fd6557 216
+  s_c992517a581cc4::t_6f4765b7d6b179 53
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "b6f40910c6762757359dc4aabe99b3319e9d8484",
+  "prompts": {},
+  "sessions": {
+    "s_c992517a581cc4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bc5ad327-2f8e-4e6c-a5f8-764240a5c645",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  }
+}
