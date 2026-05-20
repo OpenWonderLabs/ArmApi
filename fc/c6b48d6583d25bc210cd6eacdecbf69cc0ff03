@@ -1,0 +1,104 @@
+c/share/oneroarm/onero_description/urdf/A1/a1_l.srdf
+  s_b5c5c694a20070::t_2584a39ae368dd 1-32
+c++/share/oneroarm/onero_description/urdf/A1/a1_l.srdf
+  s_b5c5c694a20070::t_2584a39ae368dd 1-32
+python/conda_channel/windows/channeldata.json
+  s_b5c5c694a20070::t_4adfe3ee4982be 1
+c/README.md
+  s_b5c5c694a20070::t_b4a19096a6e3e2 3-5,10-18,21-23,25,27-28,32,39-42,51-52
+demo/arm_control_demo.c
+  s_b5c5c694a20070::t_e087b9f9837df4 10
+c++/linux/lib/cmake/oneroarm/oneroarmTargets.cmake
+  s_b5c5c694a20070::t_2584a39ae368dd 62
+c/linux/lib/cmake/oneroarm/oneroarmTargets.cmake
+  s_b5c5c694a20070::t_2584a39ae368dd 62
+c++/windows/lib/pkgconfig/rbdl.pc
+  s_b5c5c694a20070::t_77317ef8c38064 1-3
+c++/include/onero_c/onero_interface.h
+  s_b5c5c694a20070::t_2584a39ae368dd 1-295
+c/share/oneroarm/onero_description/urdf/A1/a1_l.urdf
+  s_b5c5c694a20070::t_2584a39ae368dd 1-468
+c++/include/onero_cpp/onero_interface.h
+  s_b5c5c694a20070::t_2584a39ae368dd 1-170
+python/conda_channel/linux/channeldata.json
+  s_b5c5c694a20070::t_4adfe3ee4982be 1
+c++/windows/lib/cmake/oneroarm/oneroarmTargets.cmake
+  s_b5c5c694a20070::t_2584a39ae368dd 62
+demo/arm_control_demo.cpp
+  s_b5c5c694a20070::t_a861952bed0807 1
+python/conda_channel/linux/linux-64/index.html
+  s_b5c5c694a20070::t_4adfe3ee4982be 58-60,64-66,69-72,74
+python/conda_channel/windows/noarch/index.html
+  s_b5c5c694a20070::t_4adfe3ee4982be 58,64,68
+python/conda_channel/windows/win-64/index.html
+  s_b5c5c694a20070::t_4adfe3ee4982be 58-60,64-66,69-72,74
+c++/include/onero_cpp/onero_platform.h
+  s_b5c5c694a20070::t_2584a39ae368dd 1-60
+c++/share/oneroarm/onero_description/urdf/A1/a1_r.urdf
+  s_b5c5c694a20070::t_2584a39ae368dd 1-458
+python/conda_channel/windows/index.html
+  s_b5c5c694a20070::t_4adfe3ee4982be 88
+python/conda_channel/linux/linux-64/repodata.json
+  s_b5c5c694a20070::t_4adfe3ee4982be 1
+python/conda_channel/linux/noarch/index.html
+  s_b5c5c694a20070::t_4adfe3ee4982be 58,64,68
+python/conda_channel/linux/linux-64/current_repodata.json
+  s_b5c5c694a20070::t_4adfe3ee4982be 1
+c/share/oneroarm/onero_description/urdf/A1/a1_r.urdf
+  s_b5c5c694a20070::t_2584a39ae368dd 1-458
+c/include/onero_cpp/onero_platform.h
+  s_b5c5c694a20070::t_2584a39ae368dd 1-60
+c++/include/onero_cpp/onero_define.h
+  s_b5c5c694a20070::t_2584a39ae368dd 1-119
+c++/README.md
+  s_b5c5c694a20070::t_f2ec71a1bba8ab 3-4,9-15,18-20,23-26,29-32,35-44
+python/conda_channel/windows/win-64/current_repodata.json
+  s_b5c5c694a20070::t_4adfe3ee4982be 1
+python/conda_channel/windows/win-64/repodata_from_packages.json
+  s_b5c5c694a20070::t_4adfe3ee4982be 1
+README.md
+  s_b5c5c694a20070::t_20413d330ca728 546
+  s_b5c5c694a20070::t_ffc0d2f447913a 19
+  s_b5c5c694a20070::t_b3a3beaee6800b 47-48
+  s_b5c5c694a20070::t_0150d2b3d7e1d6 160-161,169-181,184
+  s_b5c5c694a20070::t_b5d23230bc7d38 696
+  s_b5c5c694a20070::t_e04ca2b9d65d1a 217
+  s_b5c5c694a20070::t_8623fbe11dda5e 53-54
+  s_b5c5c694a20070::t_93918a5fb149bc 118-122,124,127-128,136,142
+  s_b5c5c694a20070::t_f645a1086c3fc1 3
+  s_b5c5c694a20070::t_0e8230cd5a97ab 587
+c/include/onero_c/onero_interface.h
+  s_b5c5c694a20070::t_2584a39ae368dd 1-295
+c++/share/oneroarm/onero_description/urdf/A1/a1_l.urdf
+  s_b5c5c694a20070::t_2584a39ae368dd 1-468
+c++/share/oneroarm/onero_description/urdf/A1/a1_r.srdf
+  s_b5c5c694a20070::t_2584a39ae368dd 1-32
+python/conda_channel/windows/win-64/repodata.json
+  s_b5c5c694a20070::t_4adfe3ee4982be 1
+c/windows/lib/cmake/oneroarm/oneroarmTargets.cmake
+  s_b5c5c694a20070::t_2584a39ae368dd 62
+c/share/oneroarm/onero_description/urdf/A1/a1_r.srdf
+  s_b5c5c694a20070::t_2584a39ae368dd 1-32
+c++/linux/lib/pkgconfig/rbdl.pc
+  s_b5c5c694a20070::t_77317ef8c38064 1-3
+python/conda_channel/linux/index.html
+  s_b5c5c694a20070::t_4adfe3ee4982be 88
+python/conda_channel/linux/linux-64/repodata_from_packages.json
+  s_b5c5c694a20070::t_4adfe3ee4982be 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "fcc6b48d6583d25bc210cd6eacdecbf69cc0ff03",
+  "prompts": {},
+  "sessions": {
+    "s_b5c5c694a20070": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b0af49-2a6d-492c-aea2-14c5b8c48c74",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  }
+}
