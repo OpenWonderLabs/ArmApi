@@ -1,0 +1,216 @@
+c++/linux/lib/pkgconfig/rbdl.pc
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-3
+c++/windows/include/onero_api/onero_define.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-119
+python/conda_channel/linux/noarch/index.html
+  s_b5c5c694a20070::t_2f5ea0b657d9db 58,64,68
+c++/windows/include/rbdl/Constraint.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-754
+c++/windows/include/rbdl/rbdl_errors.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-134
+c/windows/include/rbdl/rbdl_eigenmath.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-304
+c/windows/lib/cmake/oneroarm/oneroarmConfig.cmake
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-7
+c++/windows/include/rbdl/Kinematics.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-427
+c++/windows/include/rbdl/Body.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-330
+c++/windows/include/rbdl/rbdl_config.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-98
+c++/windows/include/onero_api/onero_interface.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-170
+c/windows/share/oneroarm/onero_description/urdf/A1/a1_l.urdf
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-468
+c/windows/include/rbdl/compileassert.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-46
+c/windows/include/rbdl/Constraint_Loop.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-242
+python/conda_channel/windows/channeldata.json
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1
+c/windows/lib/cmake/oneroarm/oneroarmTargets.cmake
+  s_b5c5c694a20070::t_2f5ea0b657d9db 62
+c/windows/include/rbdl/Model.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-549
+c/windows/include/onero_api_c/onero_interface_c.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-295
+c/windows/lib/pkgconfig/rbdl.pc
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-13
+c++/windows/include/rbdl/Constraint_Loop.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-242
+c++/windows/share/oneroarm/onero_description/urdf/A1/a1_l.urdf
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-468
+c/windows/include/onero_api/onero_interface.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-170
+c++/windows/share/oneroarm/onero_description/urdf/A1/a1_l.srdf
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-32
+c++/windows/include/rbdl/compileassert.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-46
+c/windows/include/rbdl/rbdl_errors.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-134
+c/windows/include/rbdl/Constraint.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-754
+c/windows/include/rbdl/rbdl_utils.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-97
+c++/linux/lib/cmake/oneroarm/oneroarmTargets.cmake
+  s_b5c5c694a20070::t_2f5ea0b657d9db 3-7,10,19-27,30-35,39-42,44-46,66-68,70-71,77-84,92-96,98-99
+c++/windows/include/rbdl/Joint.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-800
+c/windows/include/rbdl/SpatialAlgebraOperators.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-452
+c/windows/include/rbdl/Quaternion.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-223
+c/windows/include/onero_api/onero_platform.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-60
+demo/README.md
+  s_b5c5c694a20070::t_078757229d859f 1-107
+c/windows/include/rbdl/rbdl_mathutils.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-269
+c++/windows/include/rbdl/rbdl_eigenmath.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-304
+python/conda_channel/windows/win-64/repodata_from_packages.json
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1
+c/windows/README_SDK.md
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-56
+demo/CMakeLists.txt
+  s_b5c5c694a20070::t_08dfe19dd193c7 2,7-8,10-12,23-25
+c/windows/include/rbdl/Constraint_Contact.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-281
+c/windows/include/rbdl/rbdl.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-69
+c/windows/include/rbdl/rbdl_config.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-98
+python/conda_channel/linux/linux-64/index.html
+  s_b5c5c694a20070::t_2f5ea0b657d9db 58-60,64-66,69-72,74
+c/windows/include/onero_api/onero_define.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-119
+c/linux/lib/pkgconfig/rbdl.pc
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-3
+c/windows/include/rbdl/Kinematics.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-427
+c/windows/include/rbdl/rbdl_math.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-88
+c++/windows/share/oneroarm/onero_description/urdf/A1/a1_r.srdf
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-32
+c++/windows/README_SDK.md
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-56
+c++/windows/include/rbdl/rbdl_math.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-88
+python/conda_channel/linux/linux-64/repodata_from_packages.json
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1
+c++/windows/include/rbdl/SpatialAlgebraOperators.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-452
+c++/windows/include/rbdl/rbdl_mathutils.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-269
+python/conda_channel/windows/win-64/index.html
+  s_b5c5c694a20070::t_2f5ea0b657d9db 58-60,64-66,69-72,74
+python/conda_channel/linux/linux-64/current_repodata.json
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1
+c++/linux/lib/cmake/oneroarm/oneroarmTargets-release.cmake
+  s_b5c5c694a20070::t_2f5ea0b657d9db 15-16
+c/windows/include/rbdl/Joint.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-800
+README.md
+  s_b5c5c694a20070::t_5e6ce113d0e1b4 3
+  s_b5c5c694a20070::t_03eac550039d92 855
+  s_b5c5c694a20070::t_944523b0129869 256
+  s_b5c5c694a20070::t_fa50fe898ee41e 272,275,277-278,281
+  s_b5c5c694a20070::t_0c42c4d859c5b3 300
+python/conda_channel/windows/index.html
+  s_b5c5c694a20070::t_2f5ea0b657d9db 88
+c/linux/lib/cmake/oneroarm/oneroarmTargets.cmake
+  s_b5c5c694a20070::t_2f5ea0b657d9db 3-7,10,19-27,30-35,39-42,44-46,66-68,70-71,77-84,92-96,98-99
+c++/windows/cmake/RBDLConfig.cmake
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-259
+c++/windows/include/rbdl/rbdl_utils.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-97
+c/windows/include/rbdl/Body.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-330
+c++/windows/share/oneroarm/onero_description/urdf/A1/a1_r.urdf
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-458
+c/README.md
+  s_b5c5c694a20070::t_5b7eed328c0ac4 18-41,50-51
+python/conda_channel/linux/index.html
+  s_b5c5c694a20070::t_2f5ea0b657d9db 88
+python/conda_channel/windows/win-64/current_repodata.json
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1
+c++/windows/include/rbdl/rbdl.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-69
+demo/arm_control_demo.c
+  s_b5c5c694a20070::t_62f9c0a5c5ca1a 1-99
+c/windows/include/rbdl/Logging.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-74
+c/linux/lib/cmake/oneroarm/oneroarmTargets-release.cmake
+  s_b5c5c694a20070::t_2f5ea0b657d9db 15-16
+c/windows/share/oneroarm/onero_description/urdf/A1/a1_l.srdf
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-32
+c++/windows/include/onero_api/onero_platform.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-60
+c++/windows/include/rbdl/Constraints.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-1969
+c++/README.md
+  s_b5c5c694a20070::t_86fcf6f5500aa7 21-24
+c++/windows/include/onero_api_c/onero_interface_c.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-295
+c++/windows/lib/cmake/oneroarm/oneroarmTargets.cmake
+  s_b5c5c694a20070::t_2f5ea0b657d9db 62
+c/windows/include/rbdl/Constraints.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-1969
+c++/windows/include/rbdl/Model.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-549
+c++/windows/include/rbdl/Dynamics.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-184
+python/conda_channel/linux/linux-64/repodata.json
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1
+python/conda_channel/windows/win-64/repodata.json
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1
+c/windows/share/oneroarm/onero_description/urdf/A1/a1_r.srdf
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-32
+c++/windows/include/rbdl/Constraint_Contact.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-281
+c/windows/share/oneroarm/onero_description/urdf/A1/a1_r.urdf
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-458
+c++/windows/include/rbdl/Quaternion.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-223
+c/windows/include/rbdl/addons/urdfreader/urdfreader.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-69
+python/conda_channel/windows/noarch/index.html
+  s_b5c5c694a20070::t_2f5ea0b657d9db 58,64,68
+c++/linux/include/rbdl/rbdl_config.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 20
+c/linux/include/rbdl/rbdl_config.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 20
+python/conda_channel/linux/channeldata.json
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1
+c++/windows/include/rbdl/addons/urdfreader/urdfreader.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-69
+c/windows/cmake/RBDLConfig.cmake
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-259
+c/windows/include/rbdl/Dynamics.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-184
+python/README.md
+  s_b5c5c694a20070::t_03497fcf8e5e47 13-15,30,32-34,36-38,41-54
+c++/windows/include/rbdl/Logging.h
+  s_b5c5c694a20070::t_2f5ea0b657d9db 1-74
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10",
+  "base_commit_sha": "596467bec9c5792d06f553de7e80b5ea6950ee53",
+  "prompts": {},
+  "humans": {
+    "h_c9d7340f891f95": {
+      "author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  },
+  "sessions": {
+    "s_b5c5c694a20070": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b0af49-2a6d-492c-aea2-14c5b8c48c74",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  }
+}
