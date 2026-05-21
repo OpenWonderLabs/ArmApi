@@ -1,0 +1,21 @@
+README.md
+  s_b109a81876b7e6::t_9c9b786e00f9ea 60
+demo/README.md
+  s_b109a81876b7e6::t_29a5347b30b6f0 15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "05757906c1361b258860d90d3871fb627d7ee7c9",
+  "prompts": {},
+  "sessions": {
+    "s_b109a81876b7e6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b9245456-08da-4379-af89-5740a79007ab",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  }
+}
