@@ -1,0 +1,54 @@
+demo/cpp/buffered_traj_demo.cpp
+  ai_agent 1-81
+demo/cpp/movel_demo.cpp
+  ai_agent 1-75
+demo/cpp/movep_demo.cpp
+  ai_agent 1-75
+demo/python/full_demo.py
+  ai_agent 1-7,11-24,31,35,37-38,42,44,52-54,57-61,63,65,67,69,71-73,75-76
+demo/python/movel_demo.py
+  ai_agent 1-65
+demo/c/movej_demo.c
+  ai_agent 1-65
+demo/cpp/full_demo.cpp
+  ai_agent 1-6,19-32,35-37,42,44-45,49,51,59,62-70,72,74,76,78,80,82,84,88
+demo/c/buffered_traj_demo.c
+  ai_agent 1-77
+demo/python/buffered_traj_demo.py
+  ai_agent 1-71
+demo/python/movej_demo.py
+  ai_agent 1-54
+demo/python/movep_demo.py
+  ai_agent 1-65
+demo/c/full_demo.c
+  ai_agent 2,4-7,14-27,31-33,39,42-43,47,65-66,73-74,76,78,80-88,90
+demo/c/movel_demo.c
+  ai_agent 1-77
+demo/CMakeLists.txt
+  s_b109a81876b7e6::t_9da8b53532df21 2,10-12,15,54,56-63,66,68-72,74-78
+  s_b109a81876b7e6::t_c3003c56f7b027 55,67,73
+demo/cpp/movej_demo.cpp
+  ai_agent 1-64
+demo/README.md
+  s_b109a81876b7e6::t_76c2d18d082f50 8-10
+  s_b109a81876b7e6::t_c7ca30e4be62ff 26,113-117
+  s_b109a81876b7e6::t_2e26036fb984ce 3,6-7,13-22,24-25,28,49-53,59,103,122
+demo/c/movep_demo.c
+  ai_agent 1-77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "9ca3f6065f1062184e1c4b6ccbc1024f58cfe287",
+  "prompts": {},
+  "sessions": {
+    "s_b109a81876b7e6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b9245456-08da-4379-af89-5740a79007ab",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  }
+}
