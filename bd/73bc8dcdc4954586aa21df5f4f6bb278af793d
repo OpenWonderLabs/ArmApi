@@ -1,0 +1,68 @@
+demo/python/movel_demo.py
+  h_c9d7340f891f95 22,24,54,56,58
+demo/cpp/movej_demo.cpp
+  s_b109a81876b7e6::t_285a24f96eb635 52,54,56
+  s_b109a81876b7e6::t_3af10261511461 24,26
+demo/cpp/movel_demo.cpp
+  s_b109a81876b7e6::t_b771d69ac84aad 29,31
+  s_b109a81876b7e6::t_811c05be228d8c 18
+  s_b109a81876b7e6::t_dee0d2ad039f61 63,65,67
+demo/cpp/buffered_traj_demo.cpp
+  s_b109a81876b7e6::t_a638dde6438581 21
+  s_b109a81876b7e6::t_bb160c9be4d7c1 27,29
+demo/c/movep_demo.c
+  s_b109a81876b7e6::t_481a83da6e6916 69,71,73
+  s_b109a81876b7e6::t_cad8ef1254637a 13-14
+  s_b109a81876b7e6::t_1a1407f6f0b2f2 25,27
+demo/python/movep_demo.py
+  h_c9d7340f891f95 11,22,24,54,56,58
+demo/python/movej_demo.py
+  h_c9d7340f891f95 17,19,43,45,47
+demo/python/full_demo.py
+  h_c9d7340f891f95 29,31,63,65,67,69,71,73
+demo/python/buffered_traj_demo.py
+  h_c9d7340f891f95 12,19,21
+demo/cpp/full_demo.cpp
+  s_b109a81876b7e6::t_955a59c7d38009 36,38
+  s_b109a81876b7e6::t_067478fe9e6154 72,74,76,78,80,82
+  s_b109a81876b7e6::t_8b6344a29628db 25
+demo/c/movel_demo.c
+  s_b109a81876b7e6::t_4bc500cd02413c 25,27
+  s_b109a81876b7e6::t_a6d257bec158ab 13
+  s_b109a81876b7e6::t_177fd39e4252a8 69,71,73
+demo/c/movej_demo.c
+  s_b109a81876b7e6::t_f605d90665c880 20,22
+  s_b109a81876b7e6::t_e6afda48ebcb30 57,59,61
+demo/c/buffered_traj_demo.c
+  s_b109a81876b7e6::t_8d99a19d166488 22,24
+  s_b109a81876b7e6::t_45a1df4de394a4 15
+demo/cpp/movep_demo.cpp
+  s_b109a81876b7e6::t_4e96e121739143 18-19
+  s_b109a81876b7e6::t_43910233886585 63,65,67
+  s_b109a81876b7e6::t_d1790da0e8eea0 29,31
+demo/c/full_demo.c
+  s_b109a81876b7e6::t_20611eb463787f 32,34
+  s_b109a81876b7e6::t_1b39c1c25bec54 20
+  s_b109a81876b7e6::t_58fe20acdada11 79,81,83,85,87,89
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "bd73bc8dcdc4954586aa21df5f4f6bb278af793d",
+  "prompts": {},
+  "humans": {
+    "h_c9d7340f891f95": {
+      "author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  },
+  "sessions": {
+    "s_b109a81876b7e6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b9245456-08da-4379-af89-5740a79007ab",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  }
+}
