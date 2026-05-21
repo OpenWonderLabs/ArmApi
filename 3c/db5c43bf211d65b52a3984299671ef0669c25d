@@ -1,0 +1,65 @@
+demo/README.md
+  s_b109a81876b7e6::t_a30d864cf3c522 3,8-10
+  s_b109a81876b7e6::t_91e4d502ea9d12 21
+  s_b109a81876b7e6::t_f24fe335c17794 123
+  s_b109a81876b7e6::t_81f2b456bff4a8 57
+  s_b109a81876b7e6::t_0c3cab7e23040a 124
+  s_b109a81876b7e6::t_aa1cf123763b16 20
+  s_b109a81876b7e6::t_f0b0f91ff54c1c 58
+demo/cpp/can_frame_demo.cpp
+  s_b109a81876b7e6::t_b2d9bedab031a3 60-62,70
+  s_b109a81876b7e6::t_e333354653c3e2 1-59,63-69,71-80
+demo/CMakeLists.txt
+  s_b109a81876b7e6::t_8f7c768dd0a68c 68
+  s_b109a81876b7e6::t_b1abb951209560 10-13
+  s_b109a81876b7e6::t_559d2dd41ca760 69,74,80
+README.md
+  h_c9d7340f891f95 16-18,29-36
+  s_b109a81876b7e6::t_741c305bdd3219 75
+demo/c/can_frame_demo.c
+  s_b109a81876b7e6::t_91038d69fbbfa1 65-66,72
+  s_b109a81876b7e6::t_fe9979de56daaf 1-64,69,71,73-83
+  s_b109a81876b7e6::t_431c74f9c52e08 67-68,70
+demo/python/can_frame_demo.py
+  s_9a1ade48c9eac4::t_9d0990e93eda5f 65-73
+  s_b109a81876b7e6::t_283e33a0a87e60 1-15,19-23,26,31-43,45-56,59-62,64,74-79
+  s_9a1ade48c9eac4::t_a676ee4b9cd50a 16-18,24,27-30
+  s_b109a81876b7e6::t_dc6eeb384e9b51 57-58,63
+  s_9a1ade48c9eac4::t_759c8da6e2c81a 44
+  h_c9d7340f891f95 25
+demo/cpp/drag_teaching_demo.cpp
+  s_b109a81876b7e6::t_64bdebb592feb1 1-151
+demo/python/drag_teaching_demo.py
+  s_b109a81876b7e6::t_f6597c62354a01 1-142
+demo/c/drag_teaching_demo.c
+  s_b109a81876b7e6::t_639d760fca59d1 1-189
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "3cdb5c43bf211d65b52a3984299671ef0669c25d",
+  "prompts": {},
+  "humans": {
+    "h_c9d7340f891f95": {
+      "author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  },
+  "sessions": {
+    "s_9a1ade48c9eac4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "937b9900-69c8-4559-8d4c-997d6d89bcaa",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    },
+    "s_b109a81876b7e6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b9245456-08da-4379-af89-5740a79007ab",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  }
+}
