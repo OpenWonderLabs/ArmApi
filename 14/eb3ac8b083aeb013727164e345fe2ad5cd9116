@@ -1,0 +1,32 @@
+demo/README.md
+  s_b109a81876b7e6::t_4df0264993ff45 19,21-23
+demo/cpp/buffered_traj_demo.cpp
+  s_b109a81876b7e6::t_79ad0cc75c5e8a 1,3-18,31-42,54-60,79-81,84-86,89-95,97-99
+demo/python/buffered_traj_demo.py
+  s_b109a81876b7e6::t_0845a5c2442edc 1-18,23,25-34,47-53,70-72,75-77,80-90
+README.md
+  s_b109a81876b7e6::t_3c57ddc9c42839 3,17-18,20-24,26-30,40,66,79-83,101,121,123,174,176-182,186,188-193,195,197-202,204,206-210,212,214-218,220-223,225,227-230,232,234-242,244,246-270,272,274,276,278,289
+demo/c/buffered_traj_demo.c
+  s_b109a81876b7e6::t_5f45aad9e23ea3 2,4-19,26-37,52-59,85-92,95-100
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "14eb3ac8b083aeb013727164e345fe2ad5cd9116",
+  "prompts": {},
+  "humans": {
+    "h_c9d7340f891f95": {
+      "author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  },
+  "sessions": {
+    "s_b109a81876b7e6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b9245456-08da-4379-af89-5740a79007ab",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  }
+}
