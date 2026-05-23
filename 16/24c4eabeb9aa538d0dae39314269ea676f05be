@@ -1,0 +1,42 @@
+demo/c/movej_demo.c
+  s_38ae0995cef8c2::t_20b5bf00c3168f 57,67,69
+  s_38ae0995cef8c2::t_c597df53a9be6a 9-18
+demo/c/drag_teaching_demo.c
+  s_38ae0995cef8c2::t_994490d85dcfb7 22-30
+demo/c/full_demo.c
+  s_38ae0995cef8c2::t_b7e708083fb40e 77,89,91,93,95,97
+  s_38ae0995cef8c2::t_8c75e6d759620c 12-21
+demo/CMakeLists.txt
+  s_38ae0995cef8c2::t_c5d4f88a48d5ac 61-72,84-88,90-108,115-117
+demo/c/buffered_traj_demo.c
+  s_38ae0995cef8c2::t_79108ebbb0dc69 102
+  s_38ae0995cef8c2::t_562c4b5aecd69b 24-33
+  s_38ae0995cef8c2::t_6114aa174cea55 89
+demo/c/movel_demo.c
+  s_38ae0995cef8c2::t_8a32f1f5b73575 9-18
+  s_38ae0995cef8c2::t_4699e5de335e42 70,79,81
+demo/c/movep_demo.c
+  s_38ae0995cef8c2::t_9168aa9059653b 70,79,81
+  s_38ae0995cef8c2::t_36136c0b70231c 9-18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "1624c4eabeb9aa538d0dae39314269ea676f05be",
+  "prompts": {},
+  "humans": {
+    "h_c9d7340f891f95": {
+      "author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  },
+  "sessions": {
+    "s_38ae0995cef8c2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e5b74879-16fa-4999-b1f9-6f2805ca6fff",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  }
+}
