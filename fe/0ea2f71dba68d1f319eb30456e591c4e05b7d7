@@ -1,0 +1,24 @@
+README.md
+  s_03b1e1fef7ebcd::t_a3a14a69bf23c6 112-120
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "fe0ea2f71dba68d1f319eb30456e591c4e05b7d7",
+  "prompts": {},
+  "humans": {
+    "h_c9d7340f891f95": {
+      "author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  },
+  "sessions": {
+    "s_03b1e1fef7ebcd": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e5dfe-c2ce-7fd3-8ff4-8e5ba1b5578b",
+        "model": "gpt-5.5"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  }
+}
