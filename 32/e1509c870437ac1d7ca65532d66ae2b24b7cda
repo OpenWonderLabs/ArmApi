@@ -1,0 +1,19 @@
+.gitignore
+  s_043f4f3d45562d::t_68c15940fb4be3 39-40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "32e1509c870437ac1d7ca65532d66ae2b24b7cda",
+  "prompts": {},
+  "sessions": {
+    "s_043f4f3d45562d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3637be0e-da01-4539-87cb-89e0a29bac66",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  }
+}
