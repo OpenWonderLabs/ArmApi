@@ -1,0 +1,19 @@
+python/README.md
+  s_043f4f3d45562d::t_fcc69e0f140b1e 47-49,52-64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "4874282ea67974a91f282a317e0680fe57b282dc",
+  "prompts": {},
+  "sessions": {
+    "s_043f4f3d45562d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3637be0e-da01-4539-87cb-89e0a29bac66",
+        "model": "unknown"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  }
+}
