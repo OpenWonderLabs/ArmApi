@@ -1,0 +1,72 @@
+demo/c/movel_demo.c
+  s_7d36bd28c49703::t_72bc037204d52e 4,74,78
+demo/python/full_demo.py
+  s_7d36bd28c49703::t_df950f839a1bb9 4-6,63,69,73
+demo/c/full_demo.c
+  s_7d36bd28c49703::t_72bc037204d52e 5-7,88,94,98
+demo/python/buffered_traj_demo.py
+  s_7d36bd28c49703::t_df950f839a1bb9 13,75-76
+demo/c/movep_demo.c
+  s_7d36bd28c49703::t_72bc037204d52e 4,74,78
+demo/cpp/full_demo.cpp
+  s_7d36bd28c49703::t_72bc037204d52e 4-6,72,78,82
+demo/python/movep_demo.py
+  s_7d36bd28c49703::t_df950f839a1bb9 3,53,57
+demo/c/movej_demo.c
+  s_7d36bd28c49703::t_72bc037204d52e 4,66,70
+demo/README.md
+  s_7d36bd28c49703::t_72bc037204d52e 15-19
+demo/python/enable_restore_demo.py
+  s_3fdc9fe4575c9d::t_534570e8f91c39 1-35,37-92
+  h_c9d7340f891f95 36
+demo/cpp/movel_demo.cpp
+  s_7d36bd28c49703::t_72bc037204d52e 3,62,66
+demo/python/estop_demo.py
+  h_c9d7340f891f95 34-36,47
+  s_3fdc9fe4575c9d::t_547c8de567cb3a 1-33,37-46,48-119
+demo/python/movej_demo.py
+  s_7d36bd28c49703::t_df950f839a1bb9 3,43,47
+demo/cpp/movep_demo.cpp
+  s_7d36bd28c49703::t_72bc037204d52e 3,62,66
+demo/c/buffered_traj_demo.c
+  s_7d36bd28c49703::t_72bc037204d52e 14,100-101
+.gitignore
+  h_c9d7340f891f95 48
+demo/cpp/buffered_traj_demo.cpp
+  s_7d36bd28c49703::t_72bc037204d52e 13,84-85
+demo/python/movel_demo.py
+  s_7d36bd28c49703::t_df950f839a1bb9 3,53,57
+demo/python/dual_arm_coordination_demo.py
+  s_7d36bd28c49703::t_df950f839a1bb9 11-258
+demo/cpp/movej_demo.cpp
+  s_7d36bd28c49703::t_72bc037204d52e 3,52,56
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "de7f64520785716eaac73ac1d8fd4a5a26392650",
+  "prompts": {},
+  "humans": {
+    "h_c9d7340f891f95": {
+      "author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  },
+  "sessions": {
+    "s_3fdc9fe4575c9d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c0167726-46cc-4904-8d75-3afc2ee0844a",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    },
+    "s_7d36bd28c49703": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019eb640-f3b4-7042-95e7-c606c1a0f8fc",
+        "model": "gpt-5.5"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  }
+}
