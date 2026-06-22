@@ -1,0 +1,30 @@
+demo/python/dual_arm_drag_teaching_demo.py
+  s_7fba8b04e22805::t_542696b46a4871 206,210,221,224,233,289,305-307,325,329
+  h_c9d7340f891f95 36-37
+  s_7fba8b04e22805::t_edf47a11d9e13b 1-35,38-205,207-209,211-220,222-223,225-232,234-288,290-304,308-324,326-328,330-345
+demo/python/dual_arm_coordination_demo.py
+  h_c9d7340f891f95 39-41,207
+demo/python/gripper_demo.py
+  h_c9d7340f891f95 1-258
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "1a4b0967987802cb7d0438bc0b3ac547694e7edb",
+  "prompts": {},
+  "humans": {
+    "h_c9d7340f891f95": {
+      "author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  },
+  "sessions": {
+    "s_7fba8b04e22805": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ece93-1b95-7301-a759-c855b7774536",
+        "model": "gpt-5.5"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  }
+}
