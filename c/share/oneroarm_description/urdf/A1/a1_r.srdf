@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot name="a1_r_urdf">
+    <disable_collisions link1="Link1" link2="Link2" reason="Adjacent"/>
+    <disable_collisions link1="Link1" link2="Link3" reason="Never"/>
+    <disable_collisions link1="Link1" link2="Link4" reason="Never"/>
+    <disable_collisions link1="Link1" link2="Link5" reason="Never"/>
+    <disable_collisions link1="Link1" link2="Link6" reason="Never"/>
+    <disable_collisions link1="Link1" link2="Link7" reason="Never"/>
+    <disable_collisions link1="Link1" link2="base_link" reason="Adjacent"/>
+    <disable_collisions link1="Link2" link2="Link3" reason="Adjacent"/>
+    <disable_collisions link1="Link2" link2="Link4" reason="Never"/>
+    <disable_collisions link1="Link2" link2="Link5" reason="Never"/>
+    <disable_collisions link1="Link2" link2="Link6" reason="Never"/>
+    <disable_collisions link1="Link2" link2="Link7" reason="Never"/>
+    <disable_collisions link1="Link2" link2="base_link" reason="Never"/>
+    <disable_collisions link1="Link3" link2="Link4" reason="Adjacent"/>
+    <disable_collisions link1="Link3" link2="Link5" reason="Never"/>
+    <disable_collisions link1="Link3" link2="Link6" reason="Never"/>
+    <disable_collisions link1="Link3" link2="Link7" reason="Never"/>
+    <disable_collisions link1="Link3" link2="base_link" reason="Never"/>
+    <disable_collisions link1="Link4" link2="Link5" reason="Adjacent"/>
+    <disable_collisions link1="Link4" link2="Link6" reason="Never"/>
+    <disable_collisions link1="Link4" link2="Link7" reason="Never"/>
+    <disable_collisions link1="Link4" link2="base_link" reason="Never"/>
+    <disable_collisions link1="Link5" link2="Link6" reason="Adjacent"/>
+    <disable_collisions link1="Link5" link2="Link7" reason="Never"/>
+    <disable_collisions link1="Link5" link2="base_link" reason="Never"/>
+    <disable_collisions link1="Link6" link2="Link7" reason="Adjacent"/>
+    <disable_collisions link1="Link6" link2="base_link" reason="Never"/>
+    <disable_collisions link1="Link7" link2="base_link" reason="Never"/>
+</robot>
+
