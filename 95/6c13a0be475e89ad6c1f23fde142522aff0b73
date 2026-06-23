@@ -1,0 +1,19 @@
+MAINTAINERS.md
+  s_f1199f3409c807::t_7399225527c97a 1-81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "956c13a0be475e89ad6c1f23fde142522aff0b73",
+  "prompts": {},
+  "sessions": {
+    "s_f1199f3409c807": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "aa340e97-0254-4d90-bfeb-27a2e10d1daa",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  }
+}
