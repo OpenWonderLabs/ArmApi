@@ -1,0 +1,44 @@
+README.md
+  s_14c4e1d0dde52f::t_59bb0aeb6b540a 10,303
+  s_f1199f3409c807::t_f01de73880738a 155
+  s_f1199f3409c807::t_66be9bc1177f7c 109
+.gitignore
+  h_c9d7340f891f95 48-49
+c++/README.md
+  s_f1199f3409c807::t_44677446e902df 410
+  s_f1199f3409c807::t_3b5a76d86a572f 25
+  s_f1199f3409c807::t_f9cb87033ca3ca 399
+c/README.md
+  s_f1199f3409c807::t_9f4cc8923921a8 415
+  s_f1199f3409c807::t_a6b9db0476e6f4 400
+  s_f1199f3409c807::t_c7547f01b8ff10 390
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "4c6cc0cbe8ea95eee831abe99934ce1cae70b30d",
+  "prompts": {},
+  "humans": {
+    "h_c9d7340f891f95": {
+      "author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  },
+  "sessions": {
+    "s_14c4e1d0dde52f": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ef37d-00d7-7ba1-96dc-ce4cf7101f1a",
+        "model": "gpt-5.5"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    },
+    "s_f1199f3409c807": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "aa340e97-0254-4d90-bfeb-27a2e10d1daa",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  }
+}
