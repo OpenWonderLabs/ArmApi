@@ -7,7 +7,7 @@ OneRobotics A1 系列机械臂的官方预编译 SDK 与 Python 安装包。本�
 - [`python/README.md`](python/README.md) — Python 包（`import oneroarm`）
 - [`demo/README.md`](demo/README.md) — 三语言并列的可运行示例
 
-> **版本**：1.0.0 · **支持平台**：Linux x86_64 / Linux arm64 / Windows x86_64 · **C++ 标准**：C++17+ · **Python**：3.12
+> **版本**：1.0.1 · **支持平台**：Linux x86_64 / Linux arm64 / Windows x86_64 · **C++ 标准**：C++17+ · **Python**：3.12
 
 ---
 
@@ -32,7 +32,6 @@ OneRobotics A1 系列机械臂的官方预编译 SDK 与 Python 安装包。本�
       - [▌ 运动控制（自带规划，遵循 `trajectory_connect`）](#-运动控制自带规划遵循-trajectory_connect)
       - [▌ 轨迹缓冲（**仅服务 `trajectory_connect=1` 累积的队列**）](#-轨迹缓冲仅服务-trajectory_connect1-累积的队列)
       - [▌ 直接 MIT 力矩下发（⚠ **不做规划，与 trajectory buffer 无关**）](#-直接-mit-力矩下发-不做规划与-trajectory-buffer-无关)
-      - [▌ 力-位混合控制](#-力-位混合控制)
       - [▌ 状态查询](#-状态查询)
       - [▌ 原始 CAN 帧（行为约定见 §五）](#-原始-can-帧行为约定见-五)
     - [4.2 `OneroDragTeaching`](#42-onerodragteaching)
@@ -105,10 +104,9 @@ OneroArm_API_for_Users/
 | 关节角度 / 速度 / 力矩 | rad / rad·s⁻¹ / N·m，索引 `0..dof-1`，与 URDF 一致 |
 | 笛卡尔位置 | m，基坐标系 |
 | 笛卡尔姿态 | 单位四元数 `(qw, qx, qy, qz)`，标量优先 |
-| 力（`ForcePosition.force`） | N，方向由 `direction` 字段指定 |
 | 时间步长 | s，拖动示教默认 `0.01`（100 Hz） |
 | `speed_scale` | 无量纲速度比例，建议 `(0, 2.0]`，默认 `1.0` |
-| **`trajectory_connect`** | 仅作用于 `movej` / `movel` / `movep` / `force_position_movel` 的最后一个参数。`0` = 立即执行（若已有累积段，先把缓冲段连成一条平滑轨迹执行，再走当前段）；`1` = 把当前段塞进内部 `trajectory_buffer_`，**等 `execute_buffered_trajectory()` 或下一次 `trajectory_connect=0` 调用时一次性下发**。这是 SDK 唯一的"轨迹缓冲"机制；与 `send_trajectory*` **无关**（详见 §4.1）。 |
+| **`trajectory_connect`** | 仅作用于 `movej` / `movel` / `movep` 的最后一个参数。`0` = 立即执行（若已有累积段，先把缓冲段连成一条平滑轨迹执行，再走当前段）；`1` = 把当前段塞进内部 `trajectory_buffer_`，**等 `execute_buffered_trajectory()` 或下一次 `trajectory_connect=0` 调用时一次性下发**。这是 SDK 唯一的"轨迹缓冲"机制；与 `send_trajectory*` **无关**（详见 §4.1）。 |
 
 #### URDF 坐标系与结构件关系
 
@@ -154,7 +152,7 @@ OneroArm_API_for_Users/
 
 | 类别 | 含义 | 涉及方法 |
 |---|---|---|
-| `int = MoveResult` | `0=SUCCESS`，负数 = §2.3 错误码 | `enable_motors` / `disable_motors` / `movej` / `movel` / `movep` / `force_position_movel` / `send_trajectory_point` / `send_trajectory` / `cancel_trajectory` / `execute_buffered_trajectory` / `clear_trajectory_buffer` / `set_force_position_control` / `stop_force_position_control` |
+| `int = MoveResult` | `0=SUCCESS`，负数 = §2.3 错误码 | `enable_motors` / `disable_motors` / `movej` / `movel` / `movep` / `send_trajectory_point` / `send_trajectory` / `cancel_trajectory` / `execute_buffered_trajectory` / `clear_trajectory_buffer` |
 | `int = ONERO_ERR_RAW_FRAME_*` | `0=OK`，负数 = §2.4 错误码 | `send_can_frame` / `register_can_frame_callback` / `clear_can_frame_callback` / `pump_can_bus` |
 | `bool` | `true=成功` | `is_hardware_connected` / `OneroDragTeaching::initialize` / `set_hardware` / `is_initialized` |
 | `int`（拖动示教族） | `0=成功`，非 0 = 失败 | `OneroDragTeaching::enable_motors` / `start_recording` / `stop_recording` / `start_replay` / `stop_replay` / `handle_command` |
@@ -221,7 +219,6 @@ OneroArm_API_for_Users/
 | `int movej(const JointArray& target, double speed_scale=1.0, uint8_t trajectory_connect=0)` | `target`：目标关节角 (rad)；`speed_scale`：速度比例 (0, 2.0]；`trajectory_connect`：见 §2.1 | 关节空间运动到目标，内部按多项式 / 三次样条规划 |
 | `int movel(const Pose& pose, double speed_scale=1.0, uint8_t trajectory_connect=0)` | `pose`：目标位姿 (m + 单位四元数)；其他同上 | 笛卡尔**直线**运动（末端走直线，需求解 IK） |
 | `int movep(const Pose& pose, double speed_scale=1.0, uint8_t trajectory_connect=0)` | 同上 | 笛卡尔**点到点**（关节空间插值，自动避碰） |
-| `int force_position_movel(const Pose& pose, double speed_scale=1.0, uint8_t trajectory_connect=0)` | 同上 | 力-位混合控制下的直线运动；与 `set_force_position_control` 配合使用 |
 
 #### ▌ 轨迹缓冲（**仅服务 `trajectory_connect=1` 累积的队列**）
 
@@ -243,13 +240,6 @@ OneroArm_API_for_Users/
 |---|---|---|
 | `int send_trajectory_point(const JointArray& positions, const JointArray& velocities)` | 单点：关节位置 / 速度（与 dof 等长） | 单点 MIT 下发；调用方应在外部以固定周期连续调用 |
 | `int send_trajectory(const std::vector<TrajectoryPoint>& trajectory)` | 一组 (位置, 速度, 加速度) | 逐点 MIT 下发；**调用前必须自行规划好整段轨迹** |
-
-#### ▌ 力-位混合控制
-
-| C++ 签名 | 参数含义 | 作用 |
-|---|---|---|
-| `int set_force_position_control(const ForcePosition& fp)` | `fp`：方向、力大小、触发标志 | 进入力-位混合模式（持续生效，直至 stop） |
-| `int stop_force_position_control()` | — | 退出力-位混合模式 |
 
 #### ▌ 状态查询
 
@@ -310,7 +300,7 @@ C / C++ / Python 三层均提供 `send_can_frame` / `register_can_frame_callback
 
 ## 六、版本与许可
 
-- **当前版本**：1.0.0
+- **当前版本**：1.0.1
 - **License**：MIT
 - **维护者**：OneRobotics 团队
 

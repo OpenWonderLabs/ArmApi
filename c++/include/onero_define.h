@@ -4,6 +4,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <array>
 #include <vector>
 #include <functional>
 
@@ -44,6 +45,7 @@ struct onero_config_t {
     void* interrupt_ctx = nullptr;
     char model_description_path[512] = ""; // 留空 → SDK 内置 share/oneroarm_description；可被 ONERO_DESCRIPTION_PATH/DIR 或显式赋值覆盖
     bool with_gripper = false;       // true 时在同一 OneroCore 总线会话内注册可选夹爪
+    bool simulation_mode = false;    // true 时进入仿真模式（无真实硬件）
 };
 
 // ===== 运动控制默认参数 =====
@@ -152,15 +154,32 @@ struct GripperStatus {
     bool valid = false;
 };
 
+// Arm-owned gripper tactile feedback. Current hardware returns one total-force
+// frame per sensor; points stays empty until per-point feedback is enabled.
+struct GripperTactileValue {
+    uint8_t point_id = 0;
+    double fx = 0.0;
+    double fy = 0.0;
+    double fz = 0.0;
+    bool valid = false;
+};
+
+struct GripperTactileSensorStatus {
+    uint8_t sensor_id = 0;
+    GripperTactileValue total_force;
+    std::vector<GripperTactileValue> points;
+    bool valid = false;
+};
+
+struct GripperTactileStatus {
+    std::array<GripperTactileSensorStatus, 2> sensors;
+    bool valid = false;
+};
+
 // Trajectory point (for trajectory execution with dynamics)
 struct TrajectoryPoint {
     JointArray position;      // Joint positions (radians)
     JointArray velocity;      // Joint velocities (rad/s)
     JointArray acceleration;  // Joint accelerations (rad/s²)
-};
-struct ForcePosition {
-    bool force_position_flag;
-    int direction;
-     double force;
 };
 }  // namespace onero_api

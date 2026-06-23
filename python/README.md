@@ -2,7 +2,7 @@
 
 预编译 Python 扩展模块（pybind11）+ URDF/mesh 资源。三层公共面与返回值约定见仓库根 [`README.md`](../README.md)。
 
-> **模块名**：`import oneroarm`（pybind11 原生扩展，包名 `oneroarm-1.0.0`）。
+> **模块名**：`import oneroarm`（pybind11 原生扩展，包名 `oneroarm`）。
 
 ---
 
@@ -50,9 +50,22 @@ conda activate oneroarm
 conda install -c conda-forge -c ./python/conda_channel/linux oneroarm -y
 
 # Windows (PowerShell / cmd)
-conda install -c conda-forge -c .\python\conda_channel\windows oneroarm -y
+conda install -c conda-forge -c ./python/conda_channel/windows oneroarm -y
 ```
 
+> ⚠️ **不要用反斜杠** `.\python\conda_channel\windows`。conda 只把开头为 `./` `../` `/` `~`
+> 或盘符 `C:\` 的字符串识别为本地路径；`.\` 不在此列，会被当成**渠道名**拼到
+> `https://conda.anaconda.org/` 后面去联网（Windows 必现）。正斜杠在 Windows 上同样有效。
+>
+> 若仍想彻底避免歧义，可改用绝对路径或 `file://` URL（在仓库根目录执行）：
+>
+> ```bash
+> conda install -c conda-forge -c "file://$PWD/python/conda_channel/linux" oneroarm -y   # Linux
+> ```
+> ```powershell
+> conda install -c conda-forge -c "file:///$($PWD.Path -replace '\\','/')/python/conda_channel/windows" oneroarm -y   # Windows PowerShell
+> ```
+>
 > 也可用 `micromamba install ...` 替代 `conda install`。
 >
 > 安装时**必须保留** `-c conda-forge`，本地 channel 仅提供 `oneroarm` 自身，依赖（pinocchio / hpp-fcl / boost / 等）从 conda-forge 拉取。
@@ -132,8 +145,9 @@ import oneroarm
 cfg = oneroarm.OneroConfig()         # device / robot_model / dof / version / mit_kp ...
 ja  = oneroarm.JointArray()          # 类 list 容器（也可以直接传 list[float]）
 p   = oneroarm.Pose()                # x, y, z, qw, qx, qy, qz
-fp  = oneroarm.ForcePosition()       # force_position_flag / direction / force
 st  = oneroarm.ArmStateFromMotor()   # positions / velocities / torques
+gs  = oneroarm.GripperStatus()       # position / velocity / force / error / valid
+ts  = oneroarm.GripperTactileStatus()# sensors[2] / valid
 tp  = oneroarm.TrajectoryPoint()     # position / velocity / acceleration
 
 oneroarm.DragTeachingState.IDLE       # 0
@@ -155,6 +169,7 @@ oneroarm.DragTeachingState.REPLAYING  # 2
 | `mit_kp` | `list[float]` | – | 全 `0` | MIT 比例增益。`==0` 视为该关节未传入 |
 | `mit_kd` | `list[float]` | – | 全 `0` | MIT 微分增益。同上 |
 | `model_description_path` | `str` | – | `""` | `oneroarm_description` 根目录。留空 → SDK 内置 |
+| `with_gripper` | `bool` | – | `False` | 在同一串口 / CAN 会话内注册可选夹爪；也可构造 `OneroArm(cfg, with_gripper=True)` |
 
 > Python 端**不暴露** `interrupt_check` / `interrupt_ctx`（C++ 独有）。
 
@@ -194,7 +209,7 @@ oneroarm.DragTeachingState.REPLAYING  # 2
 
 ```python
 class OneroArm:
-    def __init__(self, config: OneroConfig) -> None: ...
+    def __init__(self, config: OneroConfig, with_gripper: bool = False) -> None: ...
 ```
 
 构造时按 `OneroConfig` 创建底层 robot handle；Python 层无 `valid()`，构造失败会抛异常。运动 / 状态方法既接受 `JointArray`，也接受 `list[float]`（自动转换）。
@@ -210,7 +225,46 @@ class OneroArm:
 
 > Python 的 `enable_motors()` / `disable_motors()` 仍返回 `bool`：`True` 即成功，`False` 即任何非 0 错误码。
 
-### 5.2 运动控制
+### 5.2 可选夹爪
+
+选配，默认关闭。`with_gripper=True` 时，`arm.gripper` 是 arm-owned 控制器；默认 `False` 时为 `None`。夹爪随臂初始化、复用 `OneroArm` 的同一串口 / CAN 会话（固定 CAN ID `0x08/0x18`），不会单独打开设备；`arm.enable_motors()` 只使能机械臂关节，夹爪需显式 `arm.gripper.enable()`。
+
+| 成员 / 方法 | 参数 | 返回 | 语义 |
+|---|---|---|---|
+| `OneroArm(cfg, with_gripper=True)` / `cfg.with_gripper=True` | – | `OneroArm` | 随臂创建可选夹爪 |
+| `arm.has_gripper()` | – | `bool` | 是否随臂创建了夹爪 |
+| `arm.gripper` | 属性 | `Optional[OneroGripper]` | 夹爪控制器；未开启时为 `None` |
+| `gripper.enable()` / `gripper.disable()` | – | `bool` | 使能 / 失能夹爪电机（固定 ID `0x08/0x18`，与 `enable_motors()` 解耦） |
+| `gripper.set_position(percent)` | `percent`：`0..100` | `int`（`MoveResult`） | 单帧位置保持 |
+| `gripper.move_position(percent, max_vel=100.0, max_acc=250.0, max_jerk=1000.0)` | `percent`：`0..100`；速度 / 加速度 / 加加速度上限 | `int` | 100 Hz 点到点规划 |
+| `gripper.force_control(torque)` | `torque`：N | `int` | 下发 MIT 力矩，内部钳位 ±40 N |
+| `gripper.status()` | – | `GripperStatus` | 刷新并返回 `position` / `velocity` / `force` / `error` / `valid` |
+| `gripper.get_tactile()` | – | `GripperTactileStatus` | 刷新并返回两个触摸传感器各自的合力快照 |
+
+```python
+arm = oneroarm.OneroArm(cfg, with_gripper=True)
+arm.gripper.enable()
+
+arm.gripper.set_position(50.0)                       # percent, 单帧保持
+arm.gripper.move_position(80.0, 100.0, 250.0, 1000.0) # 100 Hz 点到点规划
+arm.gripper.force_control(30.0)                       # limited to +/-40 N
+
+status = arm.gripper.status()
+print(status.position, status.velocity, status.force, status.error)
+
+tactile = arm.gripper.get_tactile()
+if tactile.valid:
+    for sensor in tactile.sensors:
+        if sensor.valid:
+            f = sensor.total_force
+            print(sensor.sensor_id, f.fx, f.fy, f.fz)
+```
+
+`status.position` / `status.velocity` 使用用户侧百分比单位；内部会映射到夹爪工作范围。`force_control()` 和 `status.force` 使用 N，夹爪力矩命令限制为 ±40 N。夹爪状态和故障码只属于夹爪域，不会改变机械臂 `dof` 或关节状态缓存。
+
+`get_tactile()` 当前读取传感器 `0x01` 和 `0x02` 的合力点 `0x00`。`fx/fy` 按 `int8_t * 0.1N` 解析，`fz` 按 `uint8_t * 0.1N` 解析；`sensor.points` 当前为空，后续支持单点分力后会填入对应测点。
+
+### 5.3 运动控制
 
 ```python
 def movej(self, target: list[float] | JointArray,
@@ -221,20 +275,9 @@ def movep(self, pose: Pose,
           speed_scale: float = 1.0, trajectory_connect: int = 0) -> int: ...
 def estimate_movej_duration(self, target: list[float] | JointArray,
                             speed_scale: float = 1.0) -> float: ...
-def force_position_movel(self, pose: Pose,
-                         speed_scale: float = 1.0, trajectory_connect: int = 0) -> int: ...
 ```
 
 返回 `MoveResult`（`0=成功`，负数错误码见 §4.2）。语义、参数约束（`speed_scale` 建议 `(0, 2.0]`，`trajectory_connect` `0` 立即/`1` 缓冲）与 C++ 一致。
-
-### 5.3 力-位混合控制
-
-```python
-def set_force_position_control (self, force_position: ForcePosition) -> int: ...
-def stop_force_position_control(self) -> int: ...
-```
-
-调用顺序：`set_force_position_control(fp)` → `force_position_movel(pose, ...)` 或 `movel(...)` → 工序结束 `stop_force_position_control()`。
 
 ### 5.4 缓冲与轨迹
 
@@ -285,6 +328,10 @@ class OneroDragTeaching:
     def stop_replay    (self) -> int: ...
 
     def handle_command (self, cmd: int) -> int: ...
+    @staticmethod
+    def handle_command_dual(left: "OneroDragTeaching",
+                            right: "OneroDragTeaching",
+                            cmd: int) -> int: ...
     def timer_callback (self) -> None: ...
 
     def get_state      (self) -> DragTeachingState: ...
@@ -301,6 +348,10 @@ class OneroDragTeaching:
 3. 录制：`drag.start_recording()` → 物理拖动 → `drag.stop_recording()`。
 4. 回放：`drag.set_replay_file(path)` → `drag.start_replay()` → 必要时 `drag.stop_replay()`。
 5. 周期循环：100 Hz 调用 `drag.timer_callback()`，并把电机回读 `drag.update_joint_state(...)` 喂入。
+
+**双臂同步命令**：
+
+`OneroDragTeaching.handle_command_dual(left, right, cmd)` 接受两个已初始化并完成 `set_hardware(...)` 的拖动示教实例。`cmd=1` 会在 SDK 内部对两臂执行并发 prepare，并用共享 `t0` 同步开始录制；`cmd=3` 走同步回放路径；`cmd=0/2` 分别用于双臂停止、停止录制。Python 侧不需要自己计算或传入 `steady_clock` 时间点。
 
 ---
 
@@ -329,15 +380,6 @@ p = oneroarm.Pose()
 p.x, p.y, p.z = 0.30, 0.00, 0.40
 p.qw           = 1.0
 arm.movel(p, speed_scale=0.5)
-
-# 力-位混合
-fp = oneroarm.ForcePosition()
-fp.force_position_flag = True
-fp.direction           = 2            # z 轴
-fp.force               = 5.0          # 5 N
-arm.set_force_position_control(fp)
-arm.force_position_movel(p, speed_scale=0.3)
-arm.stop_force_position_control()
 
 # 状态查询
 st = arm.get_arm_state_cached()
@@ -370,7 +412,7 @@ class OneroArm:
 
 | 方法 | 参数 / 行为 |
 |---|---|
-| `send_can_frame(can_id, payload)` | `can_id ∈ [0, 0x7FF]`，**不能**落在保留集；`payload` 接受 `bytes` / `bytearray` / `memoryview` 等任何 buffer-like 对象，长度 ≤ 8。同步发送，返回时 SDK 已拷贝 payload，调用方可立即释放底层缓冲 |
+| `send_can_frame(can_id, payload)` | `can_id ∈ [0, 0x7FF]`，**不能**落在保留集（含 arm 电机、夹爪 `0x08/0x18`、触觉回包 `0x418`、`0x7FF`）；`payload` 接受 `bytes` / `bytearray` / `memoryview` 等任何 buffer-like 对象，长度 ≤ 8。同步发送，返回时 SDK 已拷贝 payload，调用方可立即释放底层缓冲 |
 | `register_can_frame_callback(callback)` | 重复注册替换前一个；传 `None` 等价 `clear_can_frame_callback()`。SDK 在派发前会拷贝 payload 为 `bytes`，因此回调结束后 `payload` 仍然有效；**回调内禁止重入** `arm` 任何发送 / 运动控制方法。回调中抛出的异常会被 SDK 静默吞掉，业务侧应自行 `try/except` |
 | `clear_can_frame_callback()` | 清除已注册的回调（user_data 不再被引用） |
 | `pump_can_bus(timeout_ms)` | `timeout_ms == 0` = 一次非阻塞 try-recv；`pump_can_bus` 内部会释放 GIL，让其他 Python 线程在等待期间继续工作。回调本身在重新获取 GIL 后执行 |
@@ -417,7 +459,7 @@ arm.clear_can_frame_callback()
 | RISC-V wheel 报 `not a supported wheel on this platform` | Python 版本或平台不匹配；当前 wheel 是 `cp312` + `linux_riscv64`，请用 `python3.12` 且在 `riscv64` 系统安装 |
 | `Serial device not found` | Linux：`ls /dev/ttyACM*`，必要时 `sudo chmod 666 /dev/ttyACM0` 或加入 `dialout` 组。Windows：设备管理器查 COM 端口号，更新 `cfg.device` |
 | `enable_motors()` 返回 `False` | 检查串口设备路径、波特率、急停按钮；先 `arm.is_hardware_connected()` 验证 |
-| `send_can_frame` 返回 `-12` | `can_id` 落在保留集（电机 / 夹爪 / 操纵杆 / `0x7FF`） |
+| `send_can_frame` 返回 `-12` | `can_id` 落在保留集（电机 / 夹爪 / 触觉回包 / 操纵杆 / `0x7FF`） |
 | 回调收不到帧 | 对端发送的 CAN ID 不能在 SDK 保留集；运动控制空闲期主动 `arm.pump_can_bus(timeout_ms)` |
 | 回调中的异常被吞掉、看不到 traceback | 在回调内自己 `try/except` 并打印 / 写日志 |
 | 启动报 `Pinocchio model load failed` / 找不到 URDF | 默认走 SDK 内置；若被覆盖可设 `ONERO_DESCRIPTION_PATH` 或 `cfg.model_description_path` |

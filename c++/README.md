@@ -22,7 +22,7 @@
     - [6.1 生命周期](#61-生命周期)
     - [6.2 电机使能](#62-电机使能)
     - [6.3 运动控制](#63-运动控制)
-    - [6.4 力-位混合控制](#64-力-位混合控制)
+    - [6.4 可选夹爪](#64-可选夹爪)
     - [6.5 缓冲与轨迹](#65-缓冲与轨迹)
     - [6.6 状态查询](#66-状态查询)
   - [七、`OneroDragTeaching` 详解](#七onerodragteaching-详解)
@@ -257,16 +257,28 @@ struct GripperStatus {
     bool valid;
 };
 
+struct GripperTactileValue {
+    uint8_t point_id;                 // 0x00 = total force
+    double fx, fy, fz;                // N
+    bool valid;
+};
+
+struct GripperTactileSensorStatus {
+    uint8_t sensor_id;                // 0x01 / 0x02
+    GripperTactileValue total_force;
+    std::vector<GripperTactileValue> points; // empty until per-point feedback is enabled
+    bool valid;
+};
+
+struct GripperTactileStatus {
+    std::array<GripperTactileSensorStatus, 2> sensors;
+    bool valid;
+};
+
 struct TrajectoryPoint {
     JointArray position;
     JointArray velocity;
     JointArray acceleration;
-};
-
-struct ForcePosition {
-    bool   force_position_flag;     // true 启用力控
-    int    direction;               // 0=x / 1=y / 2=z
-    double force;                   // N
 };
 
 enum class DragTeachingState : int { IDLE = 0, RECORDING = 1, REPLAYING = 2 };
@@ -333,7 +345,6 @@ class OneroArm {
 | `movej(target, speed_scale=1.0, trajectory_connect=0)` | `target`：rad，长度 = `dof` | 关节空间梯形/S 形规划，不保证 TCP 直线 |
 | `movel(pose, …)` | `pose` | 笛卡尔直线（位置控制） |
 | `movep(pose, …)` | `pose` | 笛卡尔点到点平滑过渡，**不**保证中间路径直线 |
-| `force_position_movel(pose, …)` | `pose` | 直线运动叠加力控；调用前先 `set_force_position_control` |
 | `estimate_movej_duration(target, speed_scale=1.0)` | `target`：rad，长度 = `dof` | 只按 MoveJ 规划参数估算时长，不执行运动 |
 
 通用参数：
@@ -364,8 +375,11 @@ OneroGripper* g = arm.gripper();  // with_gripper=false 时为 nullptr
 | `g->move_position(percent, max_vel=100.0, max_acc=250.0, max_jerk=1000.0)` | `percent`：`0..100%`；速度 / 加速度 / 加加速度上限 | `MoveResult` | 100 Hz 点到点 S 曲线规划 |
 | `g->force_control(torque)` | `torque`：N | `MoveResult` | 下发夹爪 MIT 力矩，内部钳位 ±40 N |
 | `g->status()` | – | `GripperStatus` | 刷新并返回夹爪状态 |
+| `g->get_tactile()` | – | `GripperTactileStatus` | 刷新并返回两个触摸传感器各自的合力快照 |
 
 `GripperStatus` 字段（定义见 §5.2）：`position`（百分比）、`velocity`（百分比/s）、`force`（N，±40）、`error`（故障码）、`valid`。夹爪状态与故障码只属于夹爪域，不改变机械臂 `dof` 或关节状态缓存。
+
+`GripperTactileStatus` 当前读取传感器 `0x01` 和 `0x02` 的合力点 `0x00`。`fx/fy` 按 `int8_t * 0.1N` 解析，`fz` 按 `uint8_t * 0.1N` 解析；`points` 当前为空，后续支持单点分力后填入测点数据。
 
 ```cpp
 onero_config_t cfg{};
@@ -378,17 +392,11 @@ if (auto* g = arm.gripper()) {
     g->move_position(80.0, 100.0, 250.0, 1000.0);
     g->force_control(30.0); // gripper force/torque command is limited to +/-40 N
     GripperStatus st = g->status();
+    GripperTactileStatus tactile = g->get_tactile();
 }
 ```
 
-### 6.5 力-位混合控制
-
-| 方法 | 参数 | 返回 |
-|---|---|---|
-| `set_force_position_control(fp)` | `const ForcePosition& fp` | `MoveResult` |
-| `stop_force_position_control()` | – | `MoveResult` |
-
-### 6.6 缓冲与轨迹
+### 6.5 缓冲与轨迹
 
 | 方法 | 参数 |
 |---|---|
@@ -399,7 +407,7 @@ if (auto* g = arm.gripper()) {
 | `reset_stop_signal()` | 清除前一次 stop/cancel/interruption 信号；新一轮运动前由用户层显式调用 |
 | `cancel_trajectory()` | 异步终止当前运动 |
 
-### 6.7 状态查询
+### 6.6 状态查询
 
 | 方法 | 数据源 | 是否触发 CAN I/O | 适用场景 |
 |---|---|:---:|---|
@@ -533,7 +541,7 @@ public:
 
 | 方法 | 参数约束 / 行为 |
 |---|---|
-| `send_can_frame` | `can_id` ∈ `[0x000, 0x7FF]`，**不能**落在保留集（含 arm 电机、夹爪 `0x08/0x18`、`0x7FF`）；`payload`（`len==0` 可为 `nullptr`）；`len ≤ 8`。同步发送，返回时 payload 已被拷贝 |
+| `send_can_frame` | `can_id` ∈ `[0x000, 0x7FF]`，**不能**落在保留集（含 arm 电机、夹爪 `0x08/0x18`、触觉回包 `0x418`、`0x7FF`）；`payload`（`len==0` 可为 `nullptr`）；`len ≤ 8`。同步发送，返回时 payload 已被拷贝 |
 | `register_can_frame_callback` | 重复注册替换前一个；传入空 `std::function` 等价于 `clear_can_frame_callback()` |
 | `pump_can_bus` | `timeout_ms == 0` = 一次非阻塞 try-recv；典型用法是在 `movej` 等运动控制空闲期主动调用，避免 SLCAN rx 缓冲累积 |
 
@@ -588,7 +596,7 @@ int main() {
 | `enable_motors()` 返回 `-5 TIMEOUT` | 检查串口设备路径、波特率（默认 921600）、急停按钮；`is_hardware_connected()` 验证总线心跳 |
 | 运动接口返回 `-7 JOINT_LIMIT_EXCEEDED` | 目标关节越过 SDK 内置/URDF 对齐后的限位；先检查目标角度与 `robot_model` 是否匹配 |
 | 运动接口返回 `-8 BUSY` | 同一只臂已有运动命令在执行；等待结束或先 cancel，再 `reset_stop_signal()` 后发新命令 |
-| `send_can_frame` 返回 `-12 RESERVED_ID` | `can_id` 落在保留集（电机 / 夹爪 / 操纵杆 / `0x7FF`） |
+| `send_can_frame` 返回 `-12 RESERVED_ID` | `can_id` 落在保留集（电机 / 夹爪 / 触觉回包 / 操纵杆 / `0x7FF`） |
 | 回调收不到帧 | 对端发送的 CAN ID 是否在 SDK 保留集；运动控制空闲期主动 `pump_can_bus(timeout_ms)` |
 | 启动报 `Pinocchio model load failed` / 找不到 URDF | 默认走 SDK 内置 `share/oneroarm_description/`；若被覆盖可设 `ONERO_DESCRIPTION_PATH` 或 `cfg.model_description_path` |
 

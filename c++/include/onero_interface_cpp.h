@@ -32,9 +32,8 @@ namespace onero_api {
 //
 //   * 强转自 MoveResult enum（0 = SUCCESS，负数 = 各类错误，详见
 //     onero_define.h）：
-//       - movej / movel / movep / force_position_movel
+//       - movej / movel / movep
 //       - send_trajectory_point / send_trajectory
-//       - set_force_position_control / stop_force_position_control
 //       - cancel_trajectory
 //       - execute_buffered_trajectory / clear_trajectory_buffer
 //       - enable_motors / disable_motors
@@ -65,6 +64,7 @@ namespace onero_api {
 //       - get_end_effector_pose
 //       - get_end_effector_pose_cached
 //       - OneroDragTeaching::get_state（失败回退为 IDLE）
+//       - OneroGripper::get_tactile（valid=false 表示未读到有效触觉帧）
 //
 // 现状沿用历史语义不做统一以保持 ABI 稳定；后续若引入 onero_status_t
 // 单一返回码 enum，会在 SOVERSION major bump 时一并完成。
@@ -92,6 +92,7 @@ public:
                       double max_acc = 250.0,
                       double max_jerk = 1000.0);
     int force_control(double torque);
+    GripperTactileStatus get_tactile();
 
 private:
     friend class OneroArm;
@@ -158,10 +159,6 @@ public:
     int movel(const Pose& pose, double speed_scale = 1.0, uint8_t trajectory_connect = 0);
     int movep(const Pose& pose, double speed_scale = 1.0, uint8_t trajectory_connect = 0);
     double estimate_movej_duration(const JointArray& target, double speed_scale = 1.0);
-    int force_position_movel(const Pose& pose, double speed_scale = 1.0, uint8_t trajectory_connect = 0);
-
-    int set_force_position_control(const ForcePosition& force_position);
-    int stop_force_position_control();
 
     int execute_buffered_trajectory();
     int clear_trajectory_buffer();
@@ -188,7 +185,7 @@ public:
 
     // ========== 原始 CAN 帧 API ==========
     // 与电机/夹爪共用同一根 SLCAN 链路。受保留 ID 集（电机 / 夹爪 /
-    // 操纵杆 / 0x7FF）保护：发送命中保留集会直接返回错误码，不下发到总线。
+    // 触觉回包 / 操纵杆 / 0x7FF）保护：发送命中保留集会直接返回错误码，不下发到总线。
     //
     // 线程语义：注册的回调在 SDK 接收路径（即调用方运动控制线程）上
     // 同步执行；回调内禁止重入 SDK 任何发送/运动控制方法，否则可能

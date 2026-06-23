@@ -111,14 +111,26 @@ typedef struct {
     bool valid;
 } onero_gripper_status_t;
 
-/**
- * @brief C-compatible force-position control parameter
- */
 typedef struct {
-    bool force_position_flag;
-    int direction;
-    double force;
-} onero_force_position_t;
+    uint8_t point_id;
+    double fx;
+    double fy;
+    double fz;
+    bool valid;
+} onero_gripper_tactile_value_t;
+
+typedef struct {
+    uint8_t sensor_id;
+    onero_gripper_tactile_value_t total_force;
+    onero_gripper_tactile_value_t points[9];
+    uint8_t point_count;
+    bool valid;
+} onero_gripper_tactile_sensor_status_t;
+
+typedef struct {
+    onero_gripper_tactile_sensor_status_t sensors[2];
+    bool valid;
+} onero_gripper_tactile_status_t;
 
 /**
  * @brief C-compatible trajectory point (for send_trajectory)
@@ -152,14 +164,13 @@ typedef void* onero_drag_teaching_handle;
 //
 //   * int 返回 = MoveResult（0 = SUCCESS，负数 = 错误码，详见
 //     onero_define.h::MoveResult）：
-//       - onero_movej / movel / movep / force_position_movel
+//       - onero_movej / movel / movep
 //       - onero_send_trajectory_point / onero_send_trajectory
-//       - onero_set_force_position_control
-//       - onero_stop_force_position_control
 //       - onero_cancel_trajectory
 //       - onero_execute_buffered_trajectory
 //       - onero_clear_trajectory_buffer
 //       - onero_enable_motors / onero_disable_motors
+//       - onero_gripper_get_tactile（函数成功不代表 out.valid，一切以 out.valid 为准）
 //       - onero_drag_teaching_enable_motors
 //       - onero_drag_teaching_start_recording / onero_drag_teaching_stop_recording
 //       - onero_drag_teaching_start_replay   / onero_drag_teaching_stop_replay
@@ -254,11 +265,6 @@ ONERO_API int onero_movel(onero_handle handle,
                             double speed_scale,
                             uint8_t trajectory_connect);
 
-ONERO_API int onero_force_position_movel(onero_handle handle,
-                                           const onero_pose_t* pose,
-                                           double speed_scale,
-                                           uint8_t trajectory_connect);
-
 ONERO_API int onero_movep(onero_handle handle,
                             const onero_pose_t* pose,
                             double speed_scale,
@@ -299,13 +305,6 @@ ONERO_API onero_pose_t onero_get_end_effector_pose_cached(onero_handle handle);
 ONERO_API int onero_send_trajectory_point(onero_handle handle,
                                             const onero_joint_array_t* positions,
                                             const onero_joint_array_t* velocities);
-
-// --- Force-Position Control ---
-
-ONERO_API int onero_set_force_position_control(onero_handle handle,
-                                                   const onero_force_position_t* params);
-
-ONERO_API int onero_stop_force_position_control(onero_handle handle);
 
 // --- Extended State Query ---
 
@@ -352,11 +351,13 @@ ONERO_API int onero_gripper_move_position(onero_handle handle,
                                           double max_acc,
                                           double max_jerk);
 ONERO_API int onero_gripper_force_control(onero_handle handle, double torque);
+ONERO_API int onero_gripper_get_tactile(onero_handle handle,
+                                        onero_gripper_tactile_status_t* out);
 
 // --- Raw CAN Frame API ---
 //
 // 与电机/夹爪共用同一根 SLCAN 串口链路。SDK 会拦截发到保留 ID
-// （电机 0x01-0x07 / 夹爪 / 操纵杆 / 0x7FF）的帧并返回错误码，不下发到总线。
+// （电机 0x01-0x07 / 夹爪 / 触觉回包 / 操纵杆 / 0x7FF）的帧并返回错误码，不下发到总线。
 // 接收端：所有非保留 ID 的入站帧会派发到已注册回调。
 //
 // 线程语义：回调在 SDK 接收路径（即调用方运动控制线程）上同步执行；

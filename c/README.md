@@ -252,10 +252,23 @@ typedef struct {
 } onero_gripper_status_t;
 
 typedef struct {
-    bool   force_position_flag;         // true 启用力控；false 纯位置
-    int    direction;                   // 0=x / 1=y / 2=z
-    double force;                       // N
-} onero_force_position_t;
+    uint8_t point_id;                     // 0x00 = total force
+    double fx, fy, fz;                    // N
+    bool valid;
+} onero_gripper_tactile_value_t;
+
+typedef struct {
+    uint8_t sensor_id;                    // 0x01 / 0x02
+    onero_gripper_tactile_value_t total_force;
+    onero_gripper_tactile_value_t points[9];
+    uint8_t point_count;                  // current version returns 0
+    bool valid;
+} onero_gripper_tactile_sensor_status_t;
+
+typedef struct {
+    onero_gripper_tactile_sensor_status_t sensors[2];
+    bool valid;
+} onero_gripper_tactile_status_t;
 
 typedef struct {
     onero_joint_array_t position;
@@ -326,7 +339,6 @@ typedef void* onero_drag_teaching_handle;
 | `onero_movej` | `target`（rad，长度 = `dof`）/ `speed_scale` / `trajectory_connect` | `MoveResult` | 关节空间梯形/S 形规划；不保证 TCP 直线 |
 | `onero_movel` | `pose` / `speed_scale` / `trajectory_connect` | `MoveResult` | 笛卡尔直线（位置控制） |
 | `onero_movep` | `pose` / `speed_scale` / `trajectory_connect` | `MoveResult` | 笛卡尔点到点平滑过渡，不保证中间路径直线 |
-| `onero_force_position_movel` | 同 `movel` | `MoveResult` | 直线运动叠加力控；调用前先 `onero_set_force_position_control` |
 
 通用参数：
 
@@ -345,6 +357,7 @@ typedef void* onero_drag_teaching_handle;
 | `onero_gripper_set_position` | `percent` | `MoveResult` | `0..100%` 单帧位置保持 |
 | `onero_gripper_move_position` | `percent, max_vel, max_acc, max_jerk` | `MoveResult` | 100 Hz 点到点规划 |
 | `onero_gripper_force_control` | `torque` | `MoveResult` | 下发夹爪 MIT torque，内部限制为 ±40 N |
+| `onero_gripper_get_tactile` | `out` | `MoveResult` | 刷新并写出两个触摸传感器各自的合力快照 |
 
 ```c
 cfg.with_gripper = true;
@@ -352,23 +365,29 @@ onero_handle arm = onero_create_robot(&cfg);
 
 if (onero_has_gripper(arm)) {
     onero_gripper_enable(arm);
-    onero_gripper_set_position(50.0);
-    onero_gripper_move_position(80.0, 100.0, 250.0, 1000.0);
-    onero_gripper_force_control(30.0);
+    onero_gripper_set_position(arm, 50.0);
+    onero_gripper_move_position(arm, 80.0, 100.0, 250.0, 1000.0);
+    onero_gripper_force_control(arm, 30.0);
     onero_gripper_status_t gs = onero_gripper_status(arm);
+    onero_gripper_tactile_status_t tactile;
+    if (onero_gripper_get_tactile(arm, &tactile) == ONERO_OK && tactile.valid) {
+        for (int i = 0; i < 2; ++i) {
+            onero_gripper_tactile_sensor_status_t* s = &tactile.sensors[i];
+            if (s->valid) {
+                printf("%u %.3f %.3f %.3f\n",
+                       s->sensor_id,
+                       s->total_force.fx,
+                       s->total_force.fy,
+                       s->total_force.fz);
+            }
+        }
+    }
 }
 ```
 
-### 6.5 力-位混合控制
+`onero_gripper_get_tactile()` 当前读取传感器 `0x01` 和 `0x02` 的合力点 `0x00`。`fx/fy` 按 `int8_t * 0.1N` 解析，`fz` 按 `uint8_t * 0.1N` 解析；`point_count` 当前为 `0`，后续支持单点分力后会填入 `points`。
 
-| 函数 | 参数 | 返回 | 说明 |
-|---|---|---|---|
-| `onero_set_force_position_control` | `const onero_force_position_t* params` | `MoveResult` | 配置力轴与目标力，`force_position_flag=true` 启用力控 |
-| `onero_stop_force_position_control` | – | `MoveResult` | 关闭力控，回到纯位置控制 |
-
-调用顺序：`set_force_position_control` → `force_position_movel` 或 `movel` → 工序结束后 `stop_force_position_control`。
-
-### 6.6 缓冲与轨迹
+### 6.5 缓冲与轨迹
 
 | 函数 | 参数 | 返回 | 说明 |
 |---|---|---|---|
@@ -378,7 +397,7 @@ if (onero_has_gripper(arm)) {
 | `onero_clear_trajectory_buffer` | – | `MoveResult` | 丢弃缓冲队列 |
 | `onero_cancel_trajectory` | – | `MoveResult` | 异步终止当前运动指令 |
 
-### 6.7 状态查询
+### 6.6 状态查询
 
 | 函数 | 数据源 | 是否触发 CAN I/O | 适用场景 |
 |---|---|:---:|---|
@@ -393,7 +412,7 @@ if (onero_has_gripper(arm)) {
 
 > **失败回退**：`onero_joint_array_t::count == 0` 表示数组失败；`onero_arm_state_t` 三个数组同时 `count==0`；`onero_pose_t` 全零。
 
-### 6.8 拖动示教
+### 6.7 拖动示教
 
 | 函数 | 返回 | 说明 |
 |---|---|---|
@@ -495,7 +514,7 @@ int onero_pump_can_bus               (onero_handle h, int timeout_ms);
 
 | 函数 | 参数 | 约束 / 行为 |
 |---|---|---|
-| `onero_send_can_frame` | `can_id` ∈ `[0x000, 0x7FF]`，**不能**落在保留集（含 arm 电机、夹爪 `0x08/0x18`、`0x7FF`）；`data`（`len==0` 可为 `NULL`）；`len ≤ 8` | 同步发送，返回时 `data` 已被拷贝，调用方可立即释放 |
+| `onero_send_can_frame` | `can_id` ∈ `[0x000, 0x7FF]`，**不能**落在保留集（含 arm 电机、夹爪 `0x08/0x18`、触觉回包 `0x418`、`0x7FF`）；`data`（`len==0` 可为 `NULL`）；`len ≤ 8` | 同步发送，返回时 `data` 已被拷贝，调用方可立即释放 |
 | `onero_register_can_frame_callback` | `cb`（`NULL` 等价于 clear）；`user_data` 由 SDK 透传，不解释 | 重复注册替换前一个 |
 | `onero_pump_can_bus` | `timeout_ms == 0` = 一次非阻塞 try-recv | 在 `move*` 空闲期主动调用，避免 SLCAN rx 缓冲累积 |
 
@@ -550,7 +569,7 @@ int main(void) {
 | `onero_enable_motors` 返回 `-5 TIMEOUT` | 检查 `cfg.device` / `baud_rate` / 急停按钮；先调用 `onero_is_hardware_connected` 验证总线心跳 |
 | 运动接口返回 `-7 JOINT_LIMIT_EXCEEDED` | 目标关节越过 SDK 内置/URDF 对齐后的限位；先检查目标角度与 `robot_model` 是否匹配 |
 | 运动接口返回 `-8 BUSY` | 同一只臂已有运动命令在执行；等待结束或先 cancel，再 `onero_reset_stop_signal` 后发新命令 |
-| `onero_send_can_frame` 返回 `-12 RESERVED_ID` | `can_id` 落在保留集（电机 / 夹爪 / 操纵杆 / `0x7FF`） |
+| `onero_send_can_frame` 返回 `-12 RESERVED_ID` | `can_id` 落在保留集（电机 / 夹爪 / 触觉回包 / 操纵杆 / `0x7FF`） |
 | `onero_send_can_frame` 返回 `-13 PORT_NOT_OPEN` | 串口未打开或 handle 已被 `onero_destroy_robot` 释放 |
 | 回调收不到帧 | 确认对端发送的 CAN ID **不在** SDK 保留集；运动控制空闲期调用 `onero_pump_can_bus` 主动拉帧 |
 | `Pinocchio model load failed` / 找不到 URDF | 默认走 SDK 内置 `share/oneroarm_description/`；若被覆盖可设 `ONERO_DESCRIPTION_PATH` 或 `cfg.model_description_path` |
