@@ -1,0 +1,55 @@
+python/conda_channel/linux/linux-aarch64/repodata.json
+  s_f1199f3409c807::t_fc2bdbac328deb 1
+c/include/onero_interface_c.h
+  s_f1199f3409c807::t_fc2bdbac328deb 115-133,167,173,354-355,360
+c++/README.md
+  s_f1199f3409c807::t_fc2bdbac328deb 25,260-277,378,382-383,395,399,410,544,599
+python/conda_channel/linux/linux-64/index.html
+  s_f1199f3409c807::t_fc2bdbac328deb 56-60,62
+python/conda_channel/windows/win-64/repodata_from_packages.json
+  s_f1199f3409c807::t_fc2bdbac328deb 1
+python/conda_channel/linux/linux-aarch64/index.html
+  s_f1199f3409c807::t_fc2bdbac328deb 56-60,62
+c/README.md
+  s_f1199f3409c807::t_fc2bdbac328deb 255-271,360,368-370,372-384,388,390,400,415,517,572
+python/README.md
+  s_f1199f3409c807::t_fc2bdbac328deb 5,53,56-68,149-150,172,212,228-267,331-334,352-355,415,462
+python/conda_channel/linux/linux-64/repodata_from_packages.json
+  s_f1199f3409c807::t_fc2bdbac328deb 1
+python/conda_channel/linux/linux-aarch64/repodata_from_packages.json
+  s_f1199f3409c807::t_fc2bdbac328deb 1
+README.md
+  s_f1199f3409c807::t_fc2bdbac328deb 10,109,155,303
+python/conda_channel/windows/win-64/repodata.json
+  s_f1199f3409c807::t_fc2bdbac328deb 1
+.gitignore
+  s_f1199f3409c807::t_fc2bdbac328deb 1-3,6-27,29-39,41-50
+python/conda_channel/linux/noarch/index.html
+  s_f1199f3409c807::t_fc2bdbac328deb 56
+python/conda_channel/windows/noarch/index.html
+  s_f1199f3409c807::t_fc2bdbac328deb 56
+c++/include/onero_define.h
+  s_f1199f3409c807::t_fc2bdbac328deb 7,48,157-178
+c++/include/onero_interface_cpp.h
+  s_f1199f3409c807::t_fc2bdbac328deb 35,67,95,188
+python/conda_channel/linux/linux-64/repodata.json
+  s_f1199f3409c807::t_fc2bdbac328deb 1
+python/conda_channel/windows/win-64/index.html
+  s_f1199f3409c807::t_fc2bdbac328deb 56-60,62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "96677d3bca298b92fff29c2845c4fe11f219fa6a",
+  "prompts": {},
+  "sessions": {
+    "s_f1199f3409c807": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "aa340e97-0254-4d90-bfeb-27a2e10d1daa",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  }
+}
