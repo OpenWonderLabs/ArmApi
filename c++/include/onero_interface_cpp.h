@@ -181,6 +181,50 @@ public:
     int send_trajectory(const std::vector<TrajectoryPoint>& trajectory);
     int cancel_trajectory();
 
+    // ========== MIT 力位混合直接控制 ==========
+    // 用于 teleop 数据采集、阻抗控制、模仿学习推断等需要低层力位混合接口的场景。
+    // 与 movej/movel/movep 的高层规划路径**不要在重叠时间窗内混用**：内部共用同一根
+    // SLCAN 链路，混用会让运动控制语义打架。
+
+    /**
+     * @brief 以 MIT 力位混合模式直接控制整臂关节（每帧一次发送）。
+     *
+     * 控制律由底层电机在 MIT 模式下闭环执行：
+     *   tau_motor = kp * (q_des - q_actual) + kd * (dq_des - dq_actual) + tau
+     *
+     * 前提：调用前必须先 enable_motors()（默认会把电机置于 MIT_MODE）。本接口不再
+     * 切模式、不规划轨迹、不做应用层裁剪——q/dq/tau 仅受电机 pack_mit 内
+     * TAU_MAX/Q_MAX/DQ_MAX 饱和。q 走与 get_arm_state_from_motor() 一致的"SDK 关节
+     * 空间"（内部按 robot_model 的 zero_bias 转换到电机电气角度）。
+     *
+     * 第一帧建议规则：q = 当前 get_arm_state_from_motor().positions、dq = 0、
+     * tau = 0，避免 kp 较大时产生瞬间力矩冲击。
+     *
+     * 调用方负责以 ≥100Hz 的速率持续下发，低于 ~50Hz 电机端可能因超时停转或锁存。
+     *
+     * @param kp  各关节比例增益（长度 == dof，建议 [0, 500]，超出端值由电机端饱和）
+     * @param kd  各关节微分增益（长度 == dof，建议 [0, 5]）
+     * @param q   各关节目标位置 rad（长度 == dof）
+     * @param dq  各关节目标速度 rad/s（长度 == dof）
+     * @param tau 各关节前馈力矩 N·m（长度 == dof，传 compute_gravity_torque 返回
+     *            的值可直接实现含重力补偿的零力/阻抗）
+     * @return  0 成功；-1 参数长度错误；-2 硬件未初始化；
+     *          -3 至少一关节 CAN 写入失败
+     */
+    int control_mit(const JointArray& kp,
+                    const JointArray& kd,
+                    const JointArray& q,
+                    const JointArray& dq,
+                    const JointArray& tau);
+
+    /**
+     * @brief 计算给定关节姿态下的重力补偿力矩
+     * @param q       当前关节姿态 rad
+     * @param out_tau 输出力矩 N·m
+     * @return 0 成功；-1 q 长度错误；-2 动力学模型未就绪
+     */
+    int compute_gravity_torque(const JointArray& q, JointArray& out_tau);
+
     bool is_hardware_connected();
 
     // ========== 原始 CAN 帧 API ==========
@@ -255,6 +299,11 @@ public:
                       const std::string& urdf_path,
                       const std::string& robot_model,
                       const std::string& mount_orientation = "horizontal");
+    bool set_hardware(const std::string& device,
+                      const std::string& urdf_path,
+                      const std::string& robot_model,
+                      const std::string& mount_orientation,
+                      bool with_gripper);
     int  enable_motors();
     int  restore_arm();
     int  restore_arm(const JointArray& target);

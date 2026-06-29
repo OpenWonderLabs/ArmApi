@@ -13,6 +13,7 @@
     - [2.1 选项 A：CMake 直接 IMPORTED](#21-选项-acmake-直接-imported)
     - [2.2 选项 B：纯命令行编译](#22-选项-b纯命令行编译)
   - [三、运行时依赖](#三运行时依赖)
+    - [RISC-V (linux-riscv64)：依赖须自行从源码准备](#risc-v-linux-riscv64依赖须自行从源码准备)
   - [四、运行期资源定位](#四运行期资源定位)
   - [五、数据类型](#五数据类型)
     - [5.1 `onero_config_t`](#51-onero_config_t)
@@ -24,7 +25,8 @@
     - [6.3 运动控制](#63-运动控制)
     - [6.4 可选夹爪](#64-可选夹爪)
     - [6.5 缓冲与轨迹](#65-缓冲与轨迹)
-    - [6.6 状态查询](#66-状态查询)
+    - [6.6 MIT 力位混合直接控制](#66-mit-力位混合直接控制)
+    - [6.7 状态查询](#67-状态查询)
   - [七、`OneroDragTeaching` 详解](#七onerodragteaching-详解)
   - [八、完整示例](#八完整示例)
   - [九、CAN 帧示例](#九can-帧示例)
@@ -258,7 +260,7 @@ struct GripperStatus {
 };
 
 struct GripperTactileValue {
-    uint8_t point_id;                 // 0x00 = total force
+    uint8_t point_id;                 // 0x00 = total force, 0x01..0x09 = points
     double fx, fy, fz;                // N
     bool valid;
 };
@@ -266,7 +268,7 @@ struct GripperTactileValue {
 struct GripperTactileSensorStatus {
     uint8_t sensor_id;                // 0x01 / 0x02
     GripperTactileValue total_force;
-    std::vector<GripperTactileValue> points; // empty until per-point feedback is enabled
+    std::vector<GripperTactileValue> points; // 0x01..0x09
     bool valid;
 };
 
@@ -375,11 +377,11 @@ OneroGripper* g = arm.gripper();  // with_gripper=false 时为 nullptr
 | `g->move_position(percent, max_vel=100.0, max_acc=250.0, max_jerk=1000.0)` | `percent`：`0..100%`；速度 / 加速度 / 加加速度上限 | `MoveResult` | 100 Hz 点到点 S 曲线规划 |
 | `g->force_control(torque)` | `torque`：N | `MoveResult` | 下发夹爪 MIT 力矩，内部钳位 ±40 N |
 | `g->status()` | – | `GripperStatus` | 刷新并返回夹爪状态 |
-| `g->get_tactile()` | – | `GripperTactileStatus` | 刷新并返回两个触摸传感器各自的合力快照 |
+| `g->get_tactile()` | – | `GripperTactileStatus` | 刷新并返回两个触摸传感器各自的合力与 9 个测点快照 |
 
 `GripperStatus` 字段（定义见 §5.2）：`position`（百分比）、`velocity`（百分比/s）、`force`（N，±40）、`error`（故障码）、`valid`。夹爪状态与故障码只属于夹爪域，不改变机械臂 `dof` 或关节状态缓存。
 
-`GripperTactileStatus` 当前读取传感器 `0x01` 和 `0x02` 的合力点 `0x00`。`fx/fy` 按 `int8_t * 0.1N` 解析，`fz` 按 `uint8_t * 0.1N` 解析；`points` 当前为空，后续支持单点分力后填入测点数据。
+`GripperTactileStatus` 当前读取传感器 `0x01` 和 `0x02` 的 `0x00..0x09`：`0x00` 写入 `total_force`，`0x01..0x09` 写入 `points`。`fx/fy` 按 `int8_t * 0.1N` 解析，`fz` 按 `uint8_t * 0.1N` 解析。
 
 ```cpp
 onero_config_t cfg{};
@@ -407,7 +409,20 @@ if (auto* g = arm.gripper()) {
 | `reset_stop_signal()` | 清除前一次 stop/cancel/interruption 信号；新一轮运动前由用户层显式调用 |
 | `cancel_trajectory()` | 异步终止当前运动 |
 
-### 6.6 状态查询
+### 6.6 MIT 力位混合直接控制
+
+低层力位混合（阻抗）接口，用于 teleop 数据采集、阻抗控制、模仿学习推断等。控制律由电机在 MIT 模式下闭环执行：`tau_motor = kp*(q - q_act) + kd*(dq - dq_act) + tau`。
+
+调用前必须先 `enable_motors()`；所有 `JointArray` 长度必须等于 `dof`。**不要**与 `movej/movel/movep` 在重叠时间窗内混用（共用同一根 SLCAN 链路），并需以 ≥100 Hz 持续下发。
+
+| 方法 | 参数 | 返回 | 说明 |
+|---|---|---|---|
+| `control_mit(kp, kd, q, dq, tau)` | 五个 `JointArray`，长度 = `dof` | `int` | 整臂 MIT 力位混合控制（每帧一次）。`0` 成功 / `-1` 参数错误 / `-2` 硬件未初始化 / `-3` 至少一关节 CAN 写入失败 |
+| `compute_gravity_torque(q, out_tau)` | `q`（输入 `JointArray`）/ `out_tau`（输出 `JointArray&`） | `int` | 计算重力补偿力矩（含 `robot_model` 校准缩放），喂给 `control_mit` 的 `tau`。`0` 成功 / `-1` `q` 长度错误 / `-2` 动力学模型未就绪 |
+
+> `q` 走与 `get_arm_state_from_motor()` 一致的 SDK 关节空间。建议第一帧取 `q = 当前回读位置、dq = 0、tau = 0`，避免 `kp` 较大时产生瞬间力矩冲击。
+
+### 6.7 状态查询
 
 | 方法 | 数据源 | 是否触发 CAN I/O | 适用场景 |
 |---|---|:---:|---|
@@ -439,6 +454,7 @@ class OneroDragTeaching {
 |---|---|---|---|
 | `initialize(dof, record_file, time_step=0.01)` | – | `bool` | 配置 dof / 输出文件 / 采样步长（100 Hz 默认） |
 | `set_hardware(device, urdf_path, robot_model, mount_orientation="horizontal")` | – | `bool` | 绑定硬件；`mount_orientation` 必须与实际安装姿态一致 |
+| `set_hardware(device, urdf_path, robot_model, mount_orientation, with_gripper)` | – | `bool` | 同上重载，额外用 `with_gripper` 选择带夹爪的重力补偿缩放占位参数（此重载下 `mount_orientation` 需显式给出） |
 | `enable_motors()` | – | `MoveResult` | 使能电机，不带运动副作用 |
 | `restore_arm()` | – | `MoveResult` | 以安全速度恢复默认零位 |
 | `restore_arm(target)` | `target`：rad，长度 = `dof` | `MoveResult` | 以安全速度恢复到指定关节目标 |

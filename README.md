@@ -7,7 +7,7 @@ OneRobotics A1 系列机械臂的官方预编译 SDK 与 Python 安装包。本�
 - [`python/README.md`](python/README.md) — Python 包（`import oneroarm`）
 - [`demo/README.md`](demo/README.md) — 三语言并列的可运行示例
 
-> **版本**：1.0.1 · **支持平台**：Linux x86_64 / Linux arm64 / Windows x86_64 · **C++ 标准**：C++17+ · **Python**：3.12
+> **版本**：1.1.0 · **支持平台**：Linux x86_64 / Linux arm64 / Windows x86_64 · **C++ 标准**：C++17+ · **Python**：3.12
 
 ---
 
@@ -30,8 +30,10 @@ OneRobotics A1 系列机械臂的官方预编译 SDK 与 Python 安装包。本�
     - [4.1 `OneroArm`](#41-oneroarm)
       - [▌ 生命周期 / 使能](#-生命周期--使能)
       - [▌ 运动控制（自带规划，遵循 `trajectory_connect`）](#-运动控制自带规划遵循-trajectory_connect)
+      - [▌ 可选夹爪](#-可选夹爪)
       - [▌ 轨迹缓冲（**仅服务 `trajectory_connect=1` 累积的队列**）](#-轨迹缓冲仅服务-trajectory_connect1-累积的队列)
       - [▌ 直接 MIT 力矩下发（⚠ **不做规划，与 trajectory buffer 无关**）](#-直接-mit-力矩下发-不做规划与-trajectory-buffer-无关)
+      - [▌ MIT 力位混合直接控制](#-mit-力位混合直接控制)
       - [▌ 状态查询](#-状态查询)
       - [▌ 原始 CAN 帧（行为约定见 §五）](#-原始-can-帧行为约定见-五)
     - [4.2 `OneroDragTeaching`](#42-onerodragteaching)
@@ -174,6 +176,7 @@ OneroArm_API_for_Users/
 | `urdf_path` | – | `""` | URDF 文件绝对路径。留空时由 `model_description_path` + `version` 自动定位 |
 | `version` | – | `""` | URDF 子目录名（`A1`）。留空时按 `robot_model` 自动推断 |
 | `mount_orientation` | – | `vertical` | 安装姿态：`vertical` 立装 / `horizontal` 卧装。**装错将导致重力补偿方向错误** |
+| `with_gripper` | – | `false` | 是否随臂注册 arm-owned 可选夹爪（复用同一串口 / CAN 会话，固定 CAN ID `0x08/0x18`）。详见 §4.1「可选夹爪」 |
 | `mit_kp[7]` | – | 全 `0` | MIT 比例增益。逐关节回退：`==0` 视为未传入，按 `dof` 注入默认 |
 | `mit_kd[7]` | – | 全 `0` | MIT 微分增益。同上 |
 | `model_description_path` | – | `""` | `oneroarm_description` 根目录。留空 → SDK 内置（推荐） |
@@ -220,6 +223,23 @@ OneroArm_API_for_Users/
 | `int movel(const Pose& pose, double speed_scale=1.0, uint8_t trajectory_connect=0)` | `pose`：目标位姿 (m + 单位四元数)；其他同上 | 笛卡尔**直线**运动（末端走直线，需求解 IK） |
 | `int movep(const Pose& pose, double speed_scale=1.0, uint8_t trajectory_connect=0)` | 同上 | 笛卡尔**点到点**（关节空间插值，自动避碰） |
 
+#### ▌ 可选夹爪
+
+> 选配，默认关闭，需 `cfg.with_gripper = true` 随臂创建。复用 `OneroArm` 同一串口 / CAN 会话（固定 CAN ID `0x08/0x18`），不单独打开设备；`enable_motors()` 只使能机械臂关节，夹爪需显式 `gripper()->enable()`。C++ 经 `arm.gripper()`（`with_gripper=false` 时为 `nullptr`）取控制器，Python 为 `arm.gripper` 属性（未开启时 `None`）。夹爪状态 / 故障码只属于夹爪域，不改变机械臂 `dof` 或关节状态缓存。
+
+| C++ 签名 | 参数含义 | 作用 |
+|---|---|---|
+| `bool has_gripper() const` | — | 是否随臂创建了夹爪控制器 |
+| `OneroGripper* gripper()` | — | 取夹爪控制器；`with_gripper=false` 时为 `nullptr` |
+| `int enable()` / `int disable()` | — | 使能 / 失能夹爪电机（固定 ID `0x08/0x18`，与 `enable_motors()` 解耦） |
+| `int set_position(double percent)` | `percent`：`0..100` | 单帧位置保持 |
+| `int move_position(double percent, double max_vel=100.0, double max_acc=250.0, double max_jerk=1000.0)` | `percent`：`0..100`；速度 / 加速度 / 加加速度上限 | 100 Hz 点到点 S 曲线规划 |
+| `int force_control(double torque)` | `torque`：N | 下发夹爪 MIT 力矩，内部钳位 ±40 N |
+| `GripperStatus status()` | — | 刷新并返回 `position` / `velocity` / `force` / `error` / `valid` |
+| `GripperTactileStatus get_tactile()` | — | 刷新并返回两个触摸传感器各自的合力与 9 个测点快照 |
+
+> **触觉**：读取传感器 `0x01` / `0x02` 的 `0x00..0x09`，`0x00` 写入 `total_force`，`0x01..0x09` 写入 `points`；`fx/fy` 按 `int8_t * 0.1N`、`fz` 按 `uint8_t * 0.1N` 解析。完整字段与示例见各语言子 README。
+
 #### ▌ 轨迹缓冲（**仅服务 `trajectory_connect=1` 累积的队列**）
 
 | C++ 签名 | 参数含义 | 作用 |
@@ -240,6 +260,17 @@ OneroArm_API_for_Users/
 |---|---|---|
 | `int send_trajectory_point(const JointArray& positions, const JointArray& velocities)` | 单点：关节位置 / 速度（与 dof 等长） | 单点 MIT 下发；调用方应在外部以固定周期连续调用 |
 | `int send_trajectory(const std::vector<TrajectoryPoint>& trajectory)` | 一组 (位置, 速度, 加速度) | 逐点 MIT 下发；**调用前必须自行规划好整段轨迹** |
+
+#### ▌ MIT 力位混合直接控制
+
+> 低层力位混合（阻抗）接口，用于 teleop 数据采集、阻抗控制、模仿学习推断等。控制律 `tau_motor = kp*(q - q_act) + kd*(dq - dq_act) + tau` 由电机在 MIT 模式下闭环执行。调用前先 `enable_motors()`；所有 `JointArray` 长度 = `dof`，需以 ≥100 Hz 持续下发，**不要**与 `movej/movel/movep` 在重叠时间窗内混用。
+
+| C++ 签名 | 参数含义 | 作用 |
+|---|---|---|
+| `int control_mit(const JointArray& kp, const JointArray& kd, const JointArray& q, const JointArray& dq, const JointArray& tau)` | 五个 `JointArray`，长度 = `dof` | 整臂 MIT 力位混合控制（每帧一次）。`0` 成功 / `-1` 参数错误 / `-2` 硬件未初始化 / `-3` 至少一关节 CAN 写入失败 |
+| `int compute_gravity_torque(const JointArray& q, JointArray& out_tau)` | `q` 输入 / `out_tau` 输出 | 计算重力补偿力矩（含 `robot_model` 校准缩放），喂给 `control_mit` 的 `tau`。`0` 成功 / `-1` `q` 长度错误 / `-2` 动力学模型未就绪 |
+
+> `q` 走与 `get_arm_state_from_motor()` 一致的 SDK 关节空间，建议第一帧 `q=当前回读位置、dq=0、tau=0`。C ABI 为 `onero_control_mit` / `onero_compute_gravity_torque`。**Python 例外**：`compute_gravity_torque(q)` 直接返回 `JointArray`（而非 C/C++ 的「`int` 返回 + `out_tau` 出参」），模型未就绪 / 长度错误时抛 `ValueError`。
 
 #### ▌ 状态查询
 
@@ -269,6 +300,7 @@ OneroArm_API_for_Users/
 | `OneroDragTeaching()` | — | 默认构造；后续需 `initialize()` + `set_hardware()` 才能用 |
 | `bool initialize(int dof, const std::string& record_file, double time_step=0.01)` | dof / 录制文件路径 / 控制周期 (s) | 配置示教参数，分配缓冲 |
 | `bool set_hardware(const std::string& device, const std::string& urdf_path, const std::string& robot_model, const std::string& mount_orientation="horizontal")` | 串口 / URDF / 机型 / 安装姿态 | 绑定硬件并加载模型 |
+| `bool set_hardware(..., const std::string& mount_orientation, bool with_gripper)` | 同上 + `with_gripper` | 重载：额外用 `with_gripper` 选择带夹爪的重力补偿缩放占位参数（此重载下 `mount_orientation` 须显式给出）。C ABI 为 `onero_drag_teaching_set_hardware_ex`；Python 为 `set_hardware(..., with_gripper=False)` |
 | `int enable_motors(bool restore_to_zero=true)` | 是否先回零 | 使能并切到拖动示教模式 |
 | `int start_recording()` / `int stop_recording()` | — | 开始 / 停止记录拖动轨迹 |
 | `void set_replay_file(const std::string& f)` | 重放源文件 | 配置重放数据来源 |
@@ -300,7 +332,7 @@ C / C++ / Python 三层均提供 `send_can_frame` / `register_can_frame_callback
 
 ## 六、版本与许可
 
-- **当前版本**：1.0.1
+- **当前版本**：1.1.0
 - **License**：MIT
 - **维护者**：OneRobotics 团队
 

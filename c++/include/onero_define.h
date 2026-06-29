@@ -21,11 +21,6 @@ using CanFrameCallback =
     std::function<void(uint16_t can_id, const uint8_t* payload, uint8_t len)>;
 
 // Configuration structure for robot initialization
-//
-// 所有字段都给出默认值，使得 `onero_config_t cfg;`（非聚合零初始化）也是安全的：
-// 未由调用方显式赋值的字段不会保留栈/堆垃圾。
-// 对必须由调用方提供的字段（device / robot_model），默认空串配合下游
-// 检查会给出可读错误，而不是访问未初始化内存。
 struct onero_config_t {
     char device[256] = "";        // Serial device path (e.g., "/dev/ttyACM0"); 必填
     char robot_model[64] = "";    // Robot model name (e.g., "a1_l", "a1_r"); 必填
@@ -154,8 +149,8 @@ struct GripperStatus {
     bool valid = false;
 };
 
-// Arm-owned gripper tactile feedback. Current hardware returns one total-force
-// frame per sensor; points stays empty until per-point feedback is enabled.
+// Arm-owned gripper tactile feedback. point_id 0x00 is total force;
+// point_id 0x01..0x09 are the nine individual tactile points.
 struct GripperTactileValue {
     uint8_t point_id = 0;
     double fx = 0.0;

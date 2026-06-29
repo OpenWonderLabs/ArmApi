@@ -181,7 +181,7 @@ typedef void* onero_drag_teaching_handle;
 //
 //   * bool 返回（true = 成功）：
 //       - onero_drag_teaching_initialize
-//       - onero_drag_teaching_set_hardware
+//       - onero_drag_teaching_set_hardware / onero_drag_teaching_set_hardware_ex
 //       - onero_drag_teaching_is_initialized
 //       - onero_is_hardware_connected
 //
@@ -305,6 +305,31 @@ ONERO_API onero_pose_t onero_get_end_effector_pose_cached(onero_handle handle);
 ONERO_API int onero_send_trajectory_point(onero_handle handle,
                                             const onero_joint_array_t* positions,
                                             const onero_joint_array_t* velocities);
+
+// --- MIT 力位混合直接控制 ---
+// 详见 C++ 侧 onero_api::OneroArm::control_mit / compute_gravity_torque 的注释。
+
+/**
+ * @brief MIT 力位混合控制：tau_motor = kp*(q - q_act) + kd*(dq - dq_act) + tau。
+ *
+ * 前提先 onero_enable_motors。所有数组的 count 必须 == 配置的 dof。
+ * @return 0 成功；-1 参数错误；-2 硬件未初始化；-3 至少一关节 CAN 写入失败。
+ */
+ONERO_API int onero_control_mit(onero_handle handle,
+                                const onero_joint_array_t* kp,
+                                const onero_joint_array_t* kd,
+                                const onero_joint_array_t* q,
+                                const onero_joint_array_t* dq,
+                                const onero_joint_array_t* tau);
+
+/**
+ * @brief 计算重力补偿力矩（含 robot_model 校准缩放），可直接塞进 onero_control_mit 的 tau。
+ *
+ * @return 0 成功；-1 q 长度错误；-2 动力学模型未就绪。失败时 *out_tau 未定义。
+ */
+ONERO_API int onero_compute_gravity_torque(onero_handle handle,
+                                           const onero_joint_array_t* q,
+                                           onero_joint_array_t* out_tau);
 
 // --- Extended State Query ---
 
@@ -431,6 +456,15 @@ ONERO_API bool onero_drag_teaching_set_hardware(onero_drag_teaching_handle handl
                                            const char* urdf_path,
                                            const char* robot_model,
                                            const char* mount_orientation);
+
+// 同 onero_drag_teaching_set_hardware，额外用 with_gripper 选择带夹爪的重力补偿缩放占位参数。
+// with_gripper=false 时与上面的 5 参版本行为完全一致。
+ONERO_API bool onero_drag_teaching_set_hardware_ex(onero_drag_teaching_handle handle,
+                                           const char* device,
+                                           const char* urdf_path,
+                                           const char* robot_model,
+                                           const char* mount_orientation,
+                                           bool with_gripper);
 
 ONERO_API int onero_drag_teaching_enable_motors(onero_drag_teaching_handle handle);
 

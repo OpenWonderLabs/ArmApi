@@ -8,15 +8,30 @@
 
 ## 目录
 
-- [一、目录结构](#一目录结构)
-- [二、安装](#二安装)
-- [三、运行期资源定位](#三运行期资源定位)
-- [四、数据类](#四数据类)
-- [五、`OneroArm` 详解](#五oneroarm-详解)
-- [六、`OneroDragTeaching` 详解](#六onerodragteaching-详解)
-- [七、完整示例](#七完整示例)
-- [八、CAN 帧示例](#八can-帧示例)
-- [九、错误诊断](#九错误诊断)
+- [OneroArm Python 包](#oneroarm-python-包)
+  - [目录](#目录)
+  - [一、目录结构](#一目录结构)
+  - [二、安装](#二安装)
+    - [2.1 安装自检](#21-安装自检)
+    - [2.2 RISC-V (linux-riscv64)：用 wheel 安装](#22-risc-v-linux-riscv64用-wheel-安装)
+  - [三、运行期资源定位](#三运行期资源定位)
+  - [四、数据类](#四数据类)
+    - [4.1 `OneroConfig` 字段](#41-oneroconfig-字段)
+    - [4.2 错误码](#42-错误码)
+  - [五、`OneroArm` 详解](#五oneroarm-详解)
+    - [5.1 电机使能](#51-电机使能)
+    - [5.2 可选夹爪](#52-可选夹爪)
+    - [5.3 运动控制](#53-运动控制)
+    - [5.4 缓冲与轨迹](#54-缓冲与轨迹)
+    - [5.5 MIT 力位混合直接控制](#55-mit-力位混合直接控制)
+    - [5.6 状态查询](#56-状态查询)
+  - [六、`OneroDragTeaching` 详解](#六onerodragteaching-详解)
+  - [七、完整示例](#七完整示例)
+  - [八、CAN 帧示例](#八can-帧示例)
+    - [8.1 方法签名](#81-方法签名)
+    - [8.2 参数细节](#82-参数细节)
+    - [8.3 完整示例](#83-完整示例)
+  - [九、错误诊断](#九错误诊断)
 
 ---
 
@@ -239,7 +254,7 @@ class OneroArm:
 | `gripper.move_position(percent, max_vel=100.0, max_acc=250.0, max_jerk=1000.0)` | `percent`：`0..100`；速度 / 加速度 / 加加速度上限 | `int` | 100 Hz 点到点规划 |
 | `gripper.force_control(torque)` | `torque`：N | `int` | 下发 MIT 力矩，内部钳位 ±40 N |
 | `gripper.status()` | – | `GripperStatus` | 刷新并返回 `position` / `velocity` / `force` / `error` / `valid` |
-| `gripper.get_tactile()` | – | `GripperTactileStatus` | 刷新并返回两个触摸传感器各自的合力快照 |
+| `gripper.get_tactile()` | – | `GripperTactileStatus` | 刷新并返回两个触摸传感器各自的合力与 9 个测点快照 |
 
 ```python
 arm = oneroarm.OneroArm(cfg, with_gripper=True)
@@ -258,11 +273,13 @@ if tactile.valid:
         if sensor.valid:
             f = sensor.total_force
             print(sensor.sensor_id, f.fx, f.fy, f.fz)
+            for p in sensor.points:
+                print("point", p.point_id, p.fx, p.fy, p.fz)
 ```
 
 `status.position` / `status.velocity` 使用用户侧百分比单位；内部会映射到夹爪工作范围。`force_control()` 和 `status.force` 使用 N，夹爪力矩命令限制为 ±40 N。夹爪状态和故障码只属于夹爪域，不会改变机械臂 `dof` 或关节状态缓存。
 
-`get_tactile()` 当前读取传感器 `0x01` 和 `0x02` 的合力点 `0x00`。`fx/fy` 按 `int8_t * 0.1N` 解析，`fz` 按 `uint8_t * 0.1N` 解析；`sensor.points` 当前为空，后续支持单点分力后会填入对应测点。
+`get_tactile()` 当前读取传感器 `0x01` 和 `0x02` 的 `0x00..0x09`：`0x00` 写入 `sensor.total_force`，`0x01..0x09` 写入 `sensor.points`。`fx/fy` 按 `int8_t * 0.1N` 解析，`fz` 按 `uint8_t * 0.1N` 解析。
 
 ### 5.3 运动控制
 
@@ -290,7 +307,20 @@ def reset_stop_signal          (self) -> None: ...
 def cancel_trajectory          (self) -> int: ...
 ```
 
-### 5.5 状态查询
+### 5.5 MIT 力位混合直接控制
+
+```python
+def control_mit(self, kp: JointArray, kd: JointArray, q: JointArray,
+                dq: JointArray, tau: JointArray) -> int: ...
+def compute_gravity_torque(self, q: JointArray) -> JointArray: ...
+```
+
+低层力位混合（阻抗）接口，用于 teleop 数据采集、阻抗控制、模仿学习推断等。控制律 `tau_motor = kp*(q - q_act) + kd*(dq - dq_act) + tau` 由电机在 MIT 模式下闭环执行。调用前先 `enable_motors()`；所有数组长度 = `dof`，需以 ≥100 Hz 持续下发，**不要**与 `movej/movel/movep` 在重叠时间窗内混用。
+
+- `control_mit(...)`：返回 `int`（`0` 成功 / `-1` 参数错误 / `-2` 硬件未初始化 / `-3` 至少一关节 CAN 写入失败）；调用期间释放 GIL。`q` 走与 `get_arm_state_from_motor()` 一致的 SDK 关节空间，建议第一帧 `q=当前回读位置、dq=0、tau=0`。
+- `compute_gravity_torque(q)`：**返回值即重力补偿力矩 `JointArray`**（含 `robot_model` 校准缩放），可直接作为 `control_mit` 的 `tau`；`len(q) != dof` 或动力学模型未就绪时抛 `ValueError`。注意此处返回 tau，与 C / C++ 的「`int` 返回 + 出参」风格不同。
+
+### 5.6 状态查询
 
 | 方法 | 数据源 | 是否触发 CAN I/O | 适用场景 |
 |---|---|:---:|---|
@@ -315,7 +345,8 @@ class OneroDragTeaching:
 
     def initialize  (self, dof: int, record_file: str, time_step: float = 0.01) -> bool: ...
     def set_hardware(self, device: str, urdf_path: str, robot_model: str,
-                     mount_orientation: str = "horizontal") -> bool: ...
+                     mount_orientation: str = "horizontal",
+                     with_gripper: bool = False) -> bool: ...
 
     def enable_motors  (self) -> int: ...
     def restore_arm    (self) -> int: ...

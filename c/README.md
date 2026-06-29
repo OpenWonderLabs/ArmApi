@@ -252,7 +252,7 @@ typedef struct {
 } onero_gripper_status_t;
 
 typedef struct {
-    uint8_t point_id;                     // 0x00 = total force
+    uint8_t point_id;                     // 0x00 = total force, 0x01..0x09 = points
     double fx, fy, fz;                    // N
     bool valid;
 } onero_gripper_tactile_value_t;
@@ -261,7 +261,7 @@ typedef struct {
     uint8_t sensor_id;                    // 0x01 / 0x02
     onero_gripper_tactile_value_t total_force;
     onero_gripper_tactile_value_t points[9];
-    uint8_t point_count;                  // current version returns 0
+    uint8_t point_count;                  // 0..9
     bool valid;
 } onero_gripper_tactile_sensor_status_t;
 
@@ -357,7 +357,7 @@ typedef void* onero_drag_teaching_handle;
 | `onero_gripper_set_position` | `percent` | `MoveResult` | `0..100%` 单帧位置保持 |
 | `onero_gripper_move_position` | `percent, max_vel, max_acc, max_jerk` | `MoveResult` | 100 Hz 点到点规划 |
 | `onero_gripper_force_control` | `torque` | `MoveResult` | 下发夹爪 MIT torque，内部限制为 ±40 N |
-| `onero_gripper_get_tactile` | `out` | `MoveResult` | 刷新并写出两个触摸传感器各自的合力快照 |
+| `onero_gripper_get_tactile` | `out` | `MoveResult` | 刷新并写出两个触摸传感器各自的合力与 9 个测点快照 |
 
 ```c
 cfg.with_gripper = true;
@@ -379,13 +379,18 @@ if (onero_has_gripper(arm)) {
                        s->total_force.fx,
                        s->total_force.fy,
                        s->total_force.fz);
+                for (uint8_t j = 0; j < s->point_count; ++j) {
+                    onero_gripper_tactile_value_t* p = &s->points[j];
+                    printf("  point %u %.3f %.3f %.3f\n",
+                           p->point_id, p->fx, p->fy, p->fz);
+                }
             }
         }
     }
 }
 ```
 
-`onero_gripper_get_tactile()` 当前读取传感器 `0x01` 和 `0x02` 的合力点 `0x00`。`fx/fy` 按 `int8_t * 0.1N` 解析，`fz` 按 `uint8_t * 0.1N` 解析；`point_count` 当前为 `0`，后续支持单点分力后会填入 `points`。
+`onero_gripper_get_tactile()` 当前读取传感器 `0x01` 和 `0x02` 的 `0x00..0x09`：`0x00` 写入 `total_force`，`0x01..0x09` 写入 `points`，`point_count` 最多为 9。`fx/fy` 按 `int8_t * 0.1N` 解析，`fz` 按 `uint8_t * 0.1N` 解析。
 
 ### 6.5 缓冲与轨迹
 
@@ -397,7 +402,20 @@ if (onero_has_gripper(arm)) {
 | `onero_clear_trajectory_buffer` | – | `MoveResult` | 丢弃缓冲队列 |
 | `onero_cancel_trajectory` | – | `MoveResult` | 异步终止当前运动指令 |
 
-### 6.6 状态查询
+### 6.6 MIT 力位混合直接控制
+
+低层力位混合（阻抗）接口，用于 teleop 数据采集、阻抗控制、模仿学习推断等。控制律由电机在 MIT 模式下闭环执行：`tau_motor = kp*(q - q_act) + kd*(dq - dq_act) + tau`。
+
+调用前必须先 `onero_enable_motors`；所有数组的 `count` 必须等于 `dof`。**不要**与 `onero_movej/movel/movep` 在重叠时间窗内混用（共用同一根 SLCAN 链路），并需以 ≥100 Hz 持续下发。
+
+| 函数 | 参数 | 返回 | 说明 |
+|---|---|---|---|
+| `onero_control_mit` | `kp` / `kd` / `q` / `dq` / `tau`（均为 `const onero_joint_array_t*`，长度 = `dof`） | `int` | 整臂 MIT 力位混合控制（每帧一次）。`0` 成功 / `-1` 参数错误 / `-2` 硬件未初始化 / `-3` 至少一关节 CAN 写入失败 |
+| `onero_compute_gravity_torque` | `q`（输入）/ `out_tau`（输出 `onero_joint_array_t*`） | `int` | 计算重力补偿力矩（含 `robot_model` 校准缩放），可直接塞进 `onero_control_mit` 的 `tau`。`0` 成功 / `-1` `q` 长度错误 / `-2` 动力学模型未就绪 |
+
+> `q` 走与 `onero_get_arm_state_from_motor` 一致的 SDK 关节空间。建议第一帧取 `q = 当前回读位置、dq = 0、tau = 0`，避免 `kp` 较大时产生瞬间力矩冲击。
+
+### 6.7 状态查询
 
 | 函数 | 数据源 | 是否触发 CAN I/O | 适用场景 |
 |---|---|:---:|---|
@@ -412,7 +430,7 @@ if (onero_has_gripper(arm)) {
 
 > **失败回退**：`onero_joint_array_t::count == 0` 表示数组失败；`onero_arm_state_t` 三个数组同时 `count==0`；`onero_pose_t` 全零。
 
-### 6.7 拖动示教
+### 6.8 拖动示教
 
 | 函数 | 返回 | 说明 |
 |---|---|---|
@@ -420,6 +438,7 @@ if (onero_has_gripper(arm)) {
 | `onero_drag_teaching_destroy(h)` | – | 释放实例 |
 | `onero_drag_teaching_initialize(h, dof, record_file, time_step)` | `bool` | 配置 dof / 输出文件 / 采样步长（默认 `0.01s`） |
 | `onero_drag_teaching_set_hardware(h, device, urdf_path, robot_model, mount_orientation)` | `bool` | 绑定硬件设备；`mount_orientation` 必须与实际安装姿态一致 |
+| `onero_drag_teaching_set_hardware_ex(h, device, urdf_path, robot_model, mount_orientation, with_gripper)` | `bool` | 同上，额外用 `with_gripper` 选择带夹爪的重力补偿缩放占位参数；`false` 时等价于不带 `_ex` 的版本 |
 | `onero_drag_teaching_enable_motors(h)` | `MoveResult` | 使能电机，不带运动副作用 |
 | `onero_drag_teaching_restore_arm(h)` | `MoveResult` | 以安全速度恢复默认零位 |
 | `onero_drag_teaching_restore_arm_to(h, target, n)` | `MoveResult` | 以安全速度恢复到指定关节目标 |
