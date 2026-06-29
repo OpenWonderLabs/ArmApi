@@ -1,0 +1,25 @@
+README.md
+  s_c575a7f3ccee53::t_64f8521268edfc 303
+  s_c575a7f3ccee53::t_afc2f8f947d0a5 10
+  s_c575a7f3ccee53::t_1e1d9e8cd8979d 264-274
+  s_c575a7f3ccee53::t_c6bb80c4e39617 335
+  s_c575a7f3ccee53::t_77be64e2ba4544 33,36
+  s_c575a7f3ccee53::t_69891ddcede12a 226-242
+  s_c575a7f3ccee53::t_139107850f43c8 179
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "aaffe56b1189e5f11fea436d015e6c6c6bee4253",
+  "prompts": {},
+  "sessions": {
+    "s_c575a7f3ccee53": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0f9285d4-36d4-4454-bb15-f00c3bad3a2b",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  }
+}
