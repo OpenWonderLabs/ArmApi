@@ -1,0 +1,54 @@
+python/conda_channel/linux/linux-aarch64/index.html
+  s_c575a7f3ccee53::t_2a5553039975c6 56-60,62
+python/conda_channel/linux/linux-aarch64/repodata_from_packages.json
+  s_c575a7f3ccee53::t_2a5553039975c6 1
+python/conda_channel/linux/linux-64/repodata.json
+  s_c575a7f3ccee53::t_2a5553039975c6 1
+c++/include/onero_define.h
+  s_c575a7f3ccee53::t_2a5553039975c6 152-153
+python/conda_channel/linux/linux-64/index.html
+  s_c575a7f3ccee53::t_2a5553039975c6 56-60,62
+python/conda_channel/linux/noarch/index.html
+  s_c575a7f3ccee53::t_2a5553039975c6 56
+c++/README.md
+  s_c575a7f3ccee53::t_2a5553039975c6 16,28-29,263,271,380,384,412-425,457
+python/conda_channel/windows/win-64/repodata_from_packages.json
+  s_c575a7f3ccee53::t_2a5553039975c6 1
+c++/include/onero_interface_cpp.h
+  s_c575a7f3ccee53::t_2a5553039975c6 184-227,302-306
+python/conda_channel/windows/win-64/repodata.json
+  s_c575a7f3ccee53::t_2a5553039975c6 1
+c/include/onero_interface_c.h
+  s_c575a7f3ccee53::t_2a5553039975c6 184,309-333,460-467
+  s_c575a7f3ccee53::t_8daeffc35469c7 468
+python/conda_channel/windows/noarch/index.html
+  s_c575a7f3ccee53::t_2a5553039975c6 56
+python/README.md
+  s_c575a7f3ccee53::t_2a5553039975c6 11-34,257,276-277,282,310-323,348-349
+python/conda_channel/linux/linux-64/repodata_from_packages.json
+  s_c575a7f3ccee53::t_2a5553039975c6 1
+c/README.md
+  s_c575a7f3ccee53::t_2a5553039975c6 255,264,360,382-386,393,405-418,433,441
+python/conda_channel/linux/linux-aarch64/repodata.json
+  s_c575a7f3ccee53::t_2a5553039975c6 1
+python/conda_channel/windows/win-64/index.html
+  s_c575a7f3ccee53::t_2a5553039975c6 56,58-60,62
+README.md
+  s_c575a7f3ccee53::t_2a5553039975c6 10,33,36,179,226-242,264-274,303,335
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "5fe88020e0a885b82b47d814f7f150ef78094444",
+  "prompts": {},
+  "sessions": {
+    "s_c575a7f3ccee53": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0f9285d4-36d4-4454-bb15-f00c3bad3a2b",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  }
+}
