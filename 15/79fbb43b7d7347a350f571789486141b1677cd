@@ -1,0 +1,31 @@
+README.md
+  s_8ba036f17cfa53::t_c7c62518950040 218
+  s_8ba036f17cfa53::t_cacd10f7b88742 13,15,17,20
+  s_8ba036f17cfa53::t_0cedcd1986dfe8 10
+  s_8ba036f17cfa53::t_61593f82a85d4d 12,14,16,18-19,21
+  s_8ba036f17cfa53::t_114f42c3a0e890 66,75
+  s_8ba036f17cfa53::t_14489bc594df34 80,83,88-94
+  s_8ba036f17cfa53::t_6df836145ef94a 219
+  s_8ba036f17cfa53::t_81c7fcfb10927d 11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "1579fbb43b7d7347a350f571789486141b1677cd",
+  "prompts": {},
+  "humans": {
+    "h_c9d7340f891f95": {
+      "author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  },
+  "sessions": {
+    "s_8ba036f17cfa53": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dec0cd55-0a84-49f1-9dfd-879b3426b3b2",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  }
+}
