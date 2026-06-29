@@ -7,7 +7,18 @@ OneRobotics A1 系列机械臂的官方预编译 SDK 与 Python 安装包。本�
 - [`python/README.md`](python/README.md) — Python 包（`import oneroarm`）
 - [`demo/README.md`](demo/README.md) — 三语言并列的可运行示例
 
-> **版本**：1.1.0 · **支持平台**：Linux x86_64 / Linux arm64 / Windows x86_64 · **C++ 标准**：C++17+ · **Python**：3.12
+> **版本**：1.1.0 · **支持平台**：Linux x86_64 / Linux arm64 / Linux riscv64 / Windows x86_64 · **C++ 标准**：C++17+ · **Python**：3.12
+
+> ### 文档导航
+>
+> 本手册仅为三层接口的**速查索引**，只列出函数与作用；完整规格与可运行工程分置于各子目录，集成时请按下表查阅：
+>
+> | 需求 | 位置 | 内容 |
+> |---|---|---|
+> | 查阅接口完整规格 | 对应语言子 README：[`c/README.md`](c/README.md) · [`c++/README.md`](c++/README.md) · [`python/README.md`](python/README.md) | 完整函数签名、参数约束、数据结构与字段表、错误码、默认值、安装步骤与故障排查 |
+> | 参考完整构建案例 | [`demo/README.md`](demo/README.md) 及 [`demo/`](demo/) 源码 | 各动作的 C / C++ / Python 可运行示例，含 CMake 一键构建、运行命令与无硬件下的预期行为，可直接作为集成模板 |
+>
+> 语言层选择与中断回调差异见 [§1.2 三层公共接口](#12-三层公共接口)。
 
 ---
 
@@ -52,7 +63,7 @@ OneroArm_API_for_Users/
 │
 ├── c/                                       # 纯 C ABI 包：FFI / 纯 C 工程
 │   ├── include/onero_interface_c.h          # 唯一公开头（自含数据类型，零 C++ 依赖）
-│   ├── linux/{linux-x86_64, linux-arm64}/liboneroarm.so
+│   ├── linux/{linux-x86_64, linux-arm64, linux-riscv64}/liboneroarm.so
 │   ├── windows/windows-x86_64/{oneroarm.dll, oneroarm.lib}
 │   ├── share/oneroarm_description/          # URDF + mesh，运行时 dladdr 自动定位
 │   └── README.md
@@ -61,27 +72,32 @@ OneroArm_API_for_Users/
 │   ├── include/
 │   │   ├── onero_define.h                   # 数据类型 / 常量 / 错误码
 │   │   └── onero_interface_cpp.h            # 公开类（自动 #include "onero_define.h"）
-│   ├── linux/{linux-x86_64, linux-arm64}/liboneroarm.so
+│   ├── linux/{linux-x86_64, linux-arm64, linux-riscv64}/liboneroarm.so
 │   ├── windows/windows-x86_64/{oneroarm.dll, oneroarm.lib}
 │   ├── share/oneroarm_description/
 │   └── README.md
 │
-├── python/                                  # Python 包：离线 conda channel
+├── python/                                  # Python 包：conda channel + RISC-V 瘦 wheel
 │   ├── conda_channel/linux/{linux-64, linux-aarch64, noarch}/
 │   ├── conda_channel/windows/{win-64, noarch}/
+│   ├── wheels/linux-riscv64/oneroarm-*.whl  # RISC-V 专用瘦 wheel（cp312；conda-forge 无 riscv64 包）
 │   └── README.md
 │                                            # 安装后 import oneroarm；扩展模块、类型存根、
 │                                            # share/oneroarm_description 一并落到 site-packages
 │
-└── demo/                                    # 三语言并列示例
-    ├── {full,movej,movep,movel,buffered_traj,can_frame,drag_teaching}_demo.{c,cpp,py}
-    ├── CMakeLists.txt                       # 极简分发：直接 IMPORTED target，无 find_package
-    └── README.md
+├── demo/                                    # 三语言并列示例
+│   ├── {full,movej,movep,movel,buffered_traj,can_frame,drag_teaching}_demo.{c,cpp,py}
+│   ├── CMakeLists.txt                       # 极简分发：直接 IMPORTED target，无 find_package
+│   └── README.md
+│
+└── scripts/
+    └── install_riscv_dependencies.sh        # RISC-V 一次性源码编第三方依赖到 /opt/onero-deps
 ```
 
 > `c/` 与 `c++/` 是两个**真拆分包**：预编译二进制 `liboneroarm.so` / `oneroarm.dll` 在两包内**逐字节相同**，差异只在 `include/`：`c/include/` 只有 1 个自含的纯 C 头；`c++/include/` 有 2 个 C++ 头，`onero_interface_cpp.h` 自动 `#include "onero_define.h"`，用户代码只需引前者。
 >
 > `share/oneroarm_description/` 在两个 SDK 包都内置一份；SDK 通过 `dladdr()` / `GetModuleFileNameW()` 取自身 `.so` / `.dll` 路径，按 `<libdir>/../share/oneroarm_description/` 自动定位 URDF/mesh，**零配置**即可工作。
+
 
 ### 1.2 三层公共接口
 
@@ -198,6 +214,8 @@ OneroArm_API_for_Users/
 > - C++ — [`c++/include/onero_interface_cpp.h`](c++/include/onero_interface_cpp.h)、[`c++/include/onero_define.h`](c++/include/onero_define.h)
 > - C ABI — [`c/include/onero_interface_c.h`](c/include/onero_interface_c.h)
 > - Python — `import oneroarm; help(oneroarm.OneroArm)`，或 [`python/README.md`](python/README.md)
+>
+> **完整构建案例**：上述接口的端到端调用、编译与运行方式参见 [`demo/`](demo/) 源码与 [`demo/README.md`](demo/README.md)，每组动作均提供 C / C++ / Python 三份可运行示例及 CMake 一键构建步骤。
 >
 > 如需了解某个接口在 SDK 内部的具体实现（规划器、控制律、状态机），可阅读核心源码：`OneroArm_API_for_develop/C_API/src/onero_core.cpp` 等。
 
