@@ -79,16 +79,14 @@ gcc main.c -I c/include -L c/linux/linux-x86_64 -loneroarm \
     -Wl,-rpath,'$ORIGIN'/c/linux/linux-x86_64 -o my_c_app
 ```
 
-RISC-V 上把库目录替换为 `linux-riscv64`，并确保第三方运行时库在
-`LD_LIBRARY_PATH` 中：
+RISC-V 上把库目录替换为 `linux-riscv64`。第三方 runtime 已随包放在
+`third_party/linux-riscv64/lib/riscv64-linux-gnu/`；运行期由 `liboneroarm.so`
+自身 RPATH 自动解析：
 
 ```bash
-export ONERO_DEPS_PREFIX=/opt/onero-deps
-export LD_LIBRARY_PATH="$ONERO_DEPS_PREFIX/lib:$PWD/c/linux/linux-riscv64:$LD_LIBRARY_PATH"
-
 gcc main.c -I c/include -L c/linux/linux-riscv64 -loneroarm \
     -Wl,-rpath,'$ORIGIN'/c/linux/linux-riscv64 \
-    -Wl,-rpath-link,"$ONERO_DEPS_PREFIX/lib" \
+    -Wl,-rpath-link,"$PWD/third_party/linux-riscv64/lib/riscv64-linux-gnu" \
     -o my_c_app
 
 ./my_c_app
@@ -117,40 +115,28 @@ conda create -n oneroarm_cpp -c conda-forge \
 conda activate oneroarm_cpp
 ```
 
-### RISC-V (linux-riscv64)：依赖须自行从源码准备
+### RISC-V (linux-riscv64)：runtime 随包提供
 
-conda-forge **没有任何** riscv64 的 `pinocchio` / `hpp-fcl` / `urdfdom` 包，因此
-riscv 上不能用上面的 conda 一键方案。你需要在 riscv64 机器上**自行从源码编译**这些
-运行时依赖，并保证下表的**精确 SONAME** 出现在 `LD_LIBRARY_PATH`（或用
-`-Wl,-rpath,'$ORIGIN'/c/linux/linux-riscv64`）：
+RISC-V 包已内置 SDK 运行所需 native runtime。用户只需要保持仓库目录结构完整：
 
 | 运行时库（SONAME） | 版本 | 获取方式（riscv64） |
 |---|---|---|
-| `libpinocchio_default.so.3.1.0` / `libpinocchio_parsers.so.3.1.0` | **3.1.0** | 源码编，`-DBUILD_WITH_COLLISION_SUPPORT=ON` |
-| `libhpp-fcl.so` | **2.4.x** | 源码编 |
-| `liburdfdom_world.so.4.0` | `4.0.x` | 发行版包 `liburdfdom-dev` 或源码 |
-| `libcrypto.so.3` | openssl 3 | 发行版包 `libssl-dev` |
+| `libpinocchio_default.so.3.8.0` / `libpinocchio_parsers.so.3.8.0` / `libpinocchio_collision.so.3.8.0` | **3.8.0** | 随包 `third_party/linux-riscv64/lib/riscv64-linux-gnu/` |
+| `libhpp-fcl.so` | **2.4.5** | 随包 `third_party/linux-riscv64/lib/riscv64-linux-gnu/` |
+| `liburdfdom_world.so.4.0` / `libcrypto.so.3` | 系统/发行版默认 | 由目标系统提供；如目标系统不稳定提供，再纳入 runtime bundle |
 | `libgomp.so.1` / `libstdc++.so.6` | 系统默认 | 发行版自带 |
 
-> ⚠ **版本须严格匹配**：`liboneroarm.so` 的 `DT_NEEDED` 写死了 `…so.3.1.0` 这样的
-> 版本化 SONAME；pinocchio 必须恰好编 `v3.1.0`，否则动态加载器找不到而报
-> `cannot open shared object` 或 `undefined symbol`。pinocchio 务必开启 collision
-> 支持（对应 SDK 内部的 `PINOCCHIO_WITH_HPP_FCL`）。
->
-> 随包提供的一次性安装脚本见仓库根目录 `scripts/install_riscv_dependencies.sh`
-> （按序源码编 hpp-fcl 2.4.4 + pinocchio 3.1.0 到 `/opt/onero-deps`）。
+`c/linux/linux-riscv64/liboneroarm.so` 已写入相对 RPATH：
+`$ORIGIN/../../../third_party/linux-riscv64/lib/riscv64-linux-gnu`。正常用户路径不需要
+源码编译 pinocchio / hpp-fcl，也不需要设置 `/opt/onero-deps` 或执行额外安装脚本。
 
 RISC-V 用户侧最小安装 / 自检流程：
 
 ```bash
-# 1. 准备第三方依赖。在 RISC-V 目标板进入仓库根目录执行：
+# 1. 在 RISC-V 目标板进入仓库根目录：
 cd /path/to/OneroArm_API_for_Users
-sudo ./scripts/install_riscv_dependencies.sh
 
-# 2. 加载依赖路径：
-export LD_LIBRARY_PATH=/opt/onero-deps/lib:$LD_LIBRARY_PATH
-
-# 3. 确认 liboneroarm.so 的传递依赖都能解析；正常情况下不应有 not found：
+# 2. 确认 liboneroarm.so 的传递依赖都能解析；正常情况下不应有 not found：
 ldd c/linux/linux-riscv64/liboneroarm.so | grep 'not found' || true
 ```
 

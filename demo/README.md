@@ -32,13 +32,28 @@ CMakeLists 通过 `foreach()` 给每个名字声明 `<name>_demo_c` 与 `<name>_
 
 ## 编译 C / C++（Linux）
 
-运行时依赖（`pinocchio` / `hpp-fcl` / `urdfdom` 等）通过 conda env 一键拉齐：
+demo 编译本身只需要 C/C++ 编译器、CMake 和 Ninja。x86_64 / arm64 上如果想用
+conda 统一提供工具链和运行时依赖，可以创建一个构建环境：
 
 ```bash
 conda create -n oneroarm_cpp -c conda-forge \
     cmake ninja compilers eigen boost pinocchio hpp-fcl urdfdom pkg-config -y
 conda activate oneroarm_cpp
+```
 
+RISC-V 上不需要 conda，也不需要源码编译 pinocchio / hpp-fcl；这些 runtime 已随包放在
+`third_party/linux-riscv64/lib/riscv64-linux-gnu/`，并由 SDK 内置 RPATH 自动解析。
+RISC-V 只需补齐构建工具：
+
+```bash
+sudo apt-get update
+sudo apt-get install -y --no-install-recommends \
+    build-essential cmake ninja-build
+```
+
+随后编译 demo：
+
+```bash
 cd demo
 mkdir -p build && cd build
 cmake .. -G Ninja
@@ -60,16 +75,13 @@ CMake 自动按 `CMAKE_SYSTEM_PROCESSOR` 选 `linux-x86_64` / `linux-arm64` / `l
 
 > 头文件**不需要**额外 `find_package(Eigen3 / pinocchio / hpp-fcl / Boost / OpenSSL)`——
 > SDK 已用 `-fvisibility=hidden` 把这些类型吸收进 `liboneroarm.so` 的导出表。
-> 仅在运行时通过 ELF `DT_NEEDED` 拉起 conda env 里的 `libpinocchio_*` / `libhpp-fcl` 等，
-> 因此 `conda activate oneroarm_cpp` 后再 `./<name>_demo_*` 即可。
-
-> RISC-V 上 conda-forge 没有 riscv64 依赖包；先在仓库根目录运行
-> `sudo ./scripts/install_riscv_dependencies.sh`，再执行
-> `export LD_LIBRARY_PATH=/opt/onero-deps/lib:$LD_LIBRARY_PATH` 后编译/运行 demo。
+> x86_64 / arm64 运行时通过 conda env 提供传递依赖；RISC-V 运行时通过仓库
+> `third_party/linux-riscv64/` 与 SDK 内置 RPATH 提供传递依赖。正常情况下无需
+> `LD_LIBRARY_PATH`。
 
 ### 在已有 conda env 上加构建工具链
 
-如果想复用现有 conda env（例如已经装了 `oneroarm` 的 Python 消费环境），只需补齐 build-only 依赖；运行时 `pinocchio` / `hpp-fcl` / `urdfdom` 已随 `oneroarm` 包拉进同一个 env，**不要重装**：
+如果想在 x86_64 / arm64 上复用现有 conda env（例如已经装了 `oneroarm` 的 Python 消费环境），只需补齐 build-only 依赖；运行时 `pinocchio` / `hpp-fcl` / `urdfdom` 已随 `oneroarm` 包拉进同一个 env，**不要重装**：
 
 ```bash
 conda activate oneroarm                  # 已有的目标 env
@@ -88,7 +100,7 @@ cmake --build .
 
 ### 版本冲突怎么办
 
-`liboneroarm.so` 期望的 SONAME 在 [c/README.md §三](../c/README.md#三运行时依赖) 列出（pinocchio 3.1.x / hpp-fcl 2.4.x / urdfdom_world 4.0.x）。常见症状与处理：
+`liboneroarm.so` 期望的 SONAME 在 [c/README.md §三](../c/README.md#三运行时依赖) 列出。x86_64 / arm64 常见症状与处理：
 
 | 症状 | 原因 | 处理 |
 |---|---|---|

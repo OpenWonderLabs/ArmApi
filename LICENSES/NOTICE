@@ -1,0 +1,115 @@
+OneroArm ROS2 Control System
+Copyright (c) 2026 OneRobotics (Shenzhen) Co., Ltd.
+
+This product is licensed under the MIT License (see `LICENSE`).
+
+================================================================================
+Third-Party Components
+================================================================================
+
+In addition to OneRobotics-authored code, this product redistributes the
+following third-party libraries in pre-compiled form (`.so`) and header form
+under their respective upstream licenses. None of the licenses below are
+superseded by, or compatible with re-licensing under, the MIT License above.
+
+When redistributing this product (including the `libonero_api.so` runtime and
+its header dependencies under `onero_driver/include/third_party/`), the
+copyright notices and license texts of every component listed here MUST be
+preserved.
+
+The full text of each license is provided in the `third_party/`
+directory.
+
+--------------------------------------------------------------------------------
+1. RBDL — Rigid Body Dynamics Library
+--------------------------------------------------------------------------------
+
+  Files       : `librbdl.so*`, `librbdl_urdfreader.so*`,
+                 headers under `*/third_party/rbdl/`
+  License     : zlib License
+  License file: third_party/RBDL.LICENSE
+  Upstream    : https://github.com/rbdl/rbdl
+  Principal Copyright Holder:
+      Copyright (c) 2011-2018 Martin Felis <martin@fysx.org>
+
+--------------------------------------------------------------------------------
+2. Pinocchio — Rigid Body Dynamics & Kinematics
+--------------------------------------------------------------------------------
+
+  Files       : `libpinocchio_default.so*`, `libpinocchio_collision.so*`,
+                 `libpinocchio_parsers.so*`,
+                 headers under `*/third_party/pinocchio/`
+  License     : BSD 2-Clause License
+  License file: third_party/Pinocchio.LICENSE
+  Upstream    : https://github.com/stack-of-tasks/pinocchio
+  Principal Copyright Holders:
+      Copyright (c) 2014-2025 CNRS, INRIA
+      Copyright (c) 2015-2016 Wandercraft, 86 rue de Paris 91400 Orsay, France
+      Copyright (c) 2016, 2020 Toyota Research Institute
+      Copyright (c) 2014-2019 CNRS-LAAS / LAAS-CNRS
+      Copyright (c) 2023 KU Leuven
+      Copyright (c) 2015 Michael Tao
+      Plus additional contributors enumerated in the upstream repository.
+
+  Embedded sub-component:
+      pinocchio/math/multiprecision.hpp
+        Copyright 2018 John Maddock
+        Distributed under the Boost Software License, Version 1.0
+        License file: third_party/Boost.LICENSE
+        (See https://www.boost.org/LICENSE_1_0.txt)
+
+--------------------------------------------------------------------------------
+3. hpp-fcl — Flexible Collision Library (HPP fork)
+--------------------------------------------------------------------------------
+
+  Files       : `libhpp-fcl.so`,
+                 headers under `*/third_party/hpp/fcl/`
+  License     : BSD License (most files);
+                 GNU LGPL v3.0-or-later (specific files, see below)
+  License file: third_party/hpp-fcl.LICENSE
+  Upstream    : https://github.com/humanoid-path-planner/hpp-fcl
+  Principal Copyright Holders:
+      Copyright (c) 2011-2014 Willow Garage, Inc.
+      Copyright (c) 2014-2016 Open Source Robotics Foundation
+      Copyright (c) 2014-2022 CNRS, INRIA, CNRS-LAAS
+
+  ----------------------------------------------------------------------------
+  3.a IMPORTANT — LGPL-3.0-or-later sub-component within hpp-fcl
+  ----------------------------------------------------------------------------
+
+  The following file is licensed under the GNU Lesser General Public License,
+  version 3 or (at your option) any later version (LGPL-3.0-or-later):
+
+      hpp/fcl/collision_utility.h
+        Copyright (c) 2017 CNRS
+        Copyright (c) 2022 INRIA
+        Author     : Joseph Mirabel <joseph.mirabel@laas.fr>
+
+  This file is included in this distribution at:
+      onero_driver/include/third_party/hpp/fcl/collision_utility.h
+
+  Compliance notes for redistributors:
+    - Preserve the LGPL-3.0 license header inside the file.
+    - Provide the complete LGPL-3.0 license text alongside the redistribution
+      (see third_party/hpp-fcl.LGPL-3.0.txt).
+    - Make the corresponding source code of hpp-fcl available, e.g. by
+      pointing recipients to https://github.com/humanoid-path-planner/hpp-fcl
+      or by including a tarball of the upstream source.
+    - `libonero_api.so` links dynamically (not statically) against hpp-fcl;
+      end users may replace the hpp-fcl binary with a modified version
+      compatible with the LGPL.
+
+================================================================================
+Compliance Summary for Redistributors
+================================================================================
+
+When you redistribute this product, you MUST:
+
+  1. Include this NOTICE file unchanged.
+  2. Include the LICENSE file (MIT) for OneRobotics-authored code.
+  3. Include the third_party/ directory in its entirety.
+  4. Preserve all copyright headers in source and header files.
+  5. For LGPL-3.0 components (see section 3.a), provide a way for the
+     recipient to obtain the corresponding source code of that component.
+
+Failure to comply with any of the above may result in license violation.

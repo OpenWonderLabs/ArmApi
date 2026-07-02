@@ -96,31 +96,27 @@ python -c "import oneroarm; print('OK,', oneroarm.__file__)"
 ### 2.2 RISC-V (linux-riscv64)：用 wheel 安装
 
 conda-forge **没有** riscv64 的 `oneroarm` 及其依赖包，所以 riscv 上**不走 conda**，
-改用随包提供的 **linux-riscv64 瘦 wheel**：
+改用随包提供的 **linux-riscv64 自带 runtime wheel**：
 
 ```bash
-# 1. 进入仓库根目录，一键准备 RISC-V 第三方依赖
+# 1. 进入仓库根目录
 cd /path/to/OneroArm_API_for_Users
-sudo ./scripts/install_riscv_dependencies.sh
-export LD_LIBRARY_PATH=/opt/onero-deps/lib:$LD_LIBRARY_PATH
 
 # 2. 使用 Python 3.12；wheel 标签是 cp312
 python3.12 -m venv .venv_oneroarm
 . .venv_oneroarm/bin/activate
 python -m pip install --upgrade pip
 
-# 3. 装瘦 wheel（仅含 oneroarm.so + .pyi，不打包第三方动态库）
-#    --no-deps 用于避免 pip 在 riscv64 上源码编 numpy。
+# 3. 装 wheel（内含 RISC-V native runtime；--no-deps 避免 pip 在 riscv64 上源码编 numpy）
 python -m pip install --no-deps ./python/wheels/linux-riscv64/oneroarm-*.whl
 
 # 4. 自检
 python -c "import oneroarm; print('OK,', oneroarm.__file__)"
 ```
 
-> ⚠ wheel 是「瘦」的：`import oneroarm` 时由动态加载器从你的 `LD_LIBRARY_PATH`
-> 解析 `libpinocchio_default.so.3.1.0` 等。版本须严格匹配（pinocchio 必须 `v3.1.0`），
-> 否则报 `ImportError: ... undefined symbol` 或 `cannot open shared object`。
-> 排错见第九节同款条目。
+> wheel 内的 `oneroarm*.so` 带有相对 RPATH，会从 wheel 自身的
+> `third_party/lib/riscv64-linux-gnu/` 解析 `libpinocchio_default.so.3.8.0`
+> 等 native runtime。正常安装不需要设置 `/opt/onero-deps` 或执行额外安装脚本。
 >
 > wheel 文件名中的 `cp312` / `linux_riscv64` 是 pip 识别兼容性的标准标签，请不要手动改名；
 > 安装时使用上面的 `oneroarm-*.whl` 通配符即可。
@@ -486,7 +482,7 @@ arm.clear_can_frame_callback()
 | `ImportError: DLL load failed`（Windows） | 确认已 `conda activate oneroarm`，IDE 解释器是该环境的 Python |
 | `OSError: cannot find liboneroarm` 或 `Symbol not found` | 没安装传递依赖；conda env 内 `conda install -c conda-forge pinocchio hpp-fcl boost` 重装 |
 | RISC-V `pip install` 卡在编 numpy / 报 `Cannot import 'mesonpy'` | RISC-V wheel 安装用 `python -m pip install --no-deps ...linux_riscv64.whl`；`numpy`/`loguru` 如确实需要再单独用系统包或本地 wheel 安装 |
-| RISC-V `ImportError: libpinocchio_default.so.3.1.0: cannot open shared object file` | 未加载 `/opt/onero-deps/lib`；先执行 `export LD_LIBRARY_PATH=/opt/onero-deps/lib:$LD_LIBRARY_PATH`，并确认 `install_riscv_dependencies.sh` 已完成 |
+| RISC-V `ImportError: libpinocchio_default.so.3.8.0: cannot open shared object file` | wheel 缺 bundled runtime 或 RPATH 损坏；确认安装的是新版 `linux_riscv64` wheel，且 wheel 内含 `third_party/lib/riscv64-linux-gnu/` |
 | RISC-V wheel 报 `not a supported wheel on this platform` | Python 版本或平台不匹配；当前 wheel 是 `cp312` + `linux_riscv64`，请用 `python3.12` 且在 `riscv64` 系统安装 |
 | `Serial device not found` | Linux：`ls /dev/ttyACM*`，必要时 `sudo chmod 666 /dev/ttyACM0` 或加入 `dialout` 组。Windows：设备管理器查 COM 端口号，更新 `cfg.device` |
 | `enable_motors()` 返回 `False` | 检查串口设备路径、波特率、急停按钮；先 `arm.is_hardware_connected()` 验证 |

@@ -1,0 +1,51 @@
+Pinocchio - A fast and flexible implementation of Rigid Body Dynamics
+algorithms and their analytical derivatives
+
+BSD 2-Clause License
+
+Copyright (c) 2014-2025 CNRS, INRIA
+Copyright (c) 2014-2019 CNRS-LAAS / LAAS-CNRS
+Copyright (c) 2015-2016 Wandercraft, 86 rue de Paris 91400 Orsay, France
+Copyright (c) 2016, 2020 Toyota Research Institute
+Copyright (c) 2023 KU Leuven
+Copyright (c) 2015 Michael Tao
+And additional contributors as listed in the upstream repository's
+AUTHORS / commit history.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+  1. Redistributions of source code must retain the above copyright notice,
+     this list of conditions and the following disclaimer.
+
+  2. Redistributions in binary form must reproduce the above copyright notice,
+     this list of conditions and the following disclaimer in the documentation
+     and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+----
+
+Upstream: https://github.com/stack-of-tasks/pinocchio
+
+This product redistributes the following Pinocchio artifacts:
+  - libpinocchio_default.so (and SONAME variants)
+  - libpinocchio_collision.so (and SONAME variants)
+  - libpinocchio_parsers.so (and SONAME variants)
+  - Header files under src/onero_driver/include/third_party/pinocchio/
+
+The license text and copyright notices above must be preserved in any
+redistribution.
+
+Note: a small embedded sub-component of Pinocchio
+(`pinocchio/math/multiprecision.hpp`) is licensed under the Boost Software
+License 1.0 instead of BSD-2-Clause; see Boost.LICENSE in this directory.

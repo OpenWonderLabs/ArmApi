@@ -77,21 +77,21 @@ OneroArm_API_for_Users/
 │   ├── share/oneroarm_description/
 │   └── README.md
 │
-├── python/                                  # Python 包：conda channel + RISC-V 瘦 wheel
+├── python/                                  # Python 包：conda channel + RISC-V 自带 runtime wheel
 │   ├── conda_channel/linux/{linux-64, linux-aarch64, noarch}/
 │   ├── conda_channel/windows/{win-64, noarch}/
-│   ├── wheels/linux-riscv64/oneroarm-*.whl  # RISC-V 专用瘦 wheel（cp312；conda-forge 无 riscv64 包）
+│   ├── wheels/linux-riscv64/oneroarm-*.whl  # RISC-V 专用 wheel（cp312；内含 native runtime）
 │   └── README.md
 │                                            # 安装后 import oneroarm；扩展模块、类型存根、
 │                                            # share/oneroarm_description 一并落到 site-packages
+│
+├── third_party/linux-riscv64/lib/riscv64-linux-gnu/
+│                                            # RISC-V C/C++ SDK 运行时依赖；由 liboneroarm.so RPATH 自动解析
 │
 ├── demo/                                    # 三语言并列示例
 │   ├── {full,movej,movep,movel,buffered_traj,can_frame,drag_teaching}_demo.{c,cpp,py}
 │   ├── CMakeLists.txt                       # 极简分发：直接 IMPORTED target，无 find_package
 │   └── README.md
-│
-└── scripts/
-    └── install_riscv_dependencies.sh        # RISC-V 一次性源码编第三方依赖到 /opt/onero-deps
 ```
 
 > `c/` 与 `c++/` 是两个**真拆分包**：预编译二进制 `liboneroarm.so` / `oneroarm.dll` 在两包内**逐字节相同**，差异只在 `include/`：`c/include/` 只有 1 个自含的纯 C 头；`c++/include/` 有 2 个 C++ 头，`onero_interface_cpp.h` 自动 `#include "onero_define.h"`，用户代码只需引前者。
