@@ -1,0 +1,29 @@
+MAINTAINERS.md
+  s_8ba036f17cfa53::t_4382888f50573d 1-81
+scripts/install_riscv_dependencies.sh
+  s_fc875fa2bb9aca::t_292b6442f0e4ce 38-40,48-49,53,60,73-99
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.8",
+  "base_commit_sha": "c73ac31ead6778d185a8c90883a354e9932dfce2",
+  "prompts": {},
+  "sessions": {
+    "s_8ba036f17cfa53": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dec0cd55-0a84-49f1-9dfd-879b3426b3b2",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    },
+    "s_fc875fa2bb9aca": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f2127-075f-7a80-9b35-4432b83db5a6",
+        "model": "unknown"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  }
+}
