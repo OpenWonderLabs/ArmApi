@@ -1,0 +1,20 @@
+scripts/install_riscv_dependencies.sh
+  s_fc875fa2bb9aca::t_a6101a1f9ea4f5 38-39,53,60,73-99
+  s_fc875fa2bb9aca::t_d6fa05559b881e 40,48-49
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.8",
+  "base_commit_sha": "2cb4aa961813a82fa5aa4396402d4c0db4ba646e",
+  "prompts": {},
+  "sessions": {
+    "s_fc875fa2bb9aca": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f2127-075f-7a80-9b35-4432b83db5a6",
+        "model": "gpt-5.5"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  }
+}
