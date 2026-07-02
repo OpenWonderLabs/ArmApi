@@ -35,7 +35,9 @@ fi
 # -----------------------------------------------------------------------------
 # 1. 发行版包（能 apt 拿的简单依赖）。包名以 Debian/Ubuntu(ports) 为准，
 #    其它发行版按需替换。pinocchio 需要 urdfdom；hpp-fcl 需要 octomap/assimp/qhull。
-#    wheel 发布固定为 cp312，因此这里也预装 python3.12 + venv/dev。
+#    wheel 发布固定为 cp312；Bianbu apt 源可能没有 python3.12，因此这里不把
+#    python3.12* 混进同一条 apt 命令，避免一个无候选包中断全部依赖安装。
+#    同时保留源码编译 Python 3.12 常用的 dev 包，便于用户补装解释器后重跑。
 # -----------------------------------------------------------------------------
 echo "==> [1/3] apt 安装基础工具链与可直接获取的依赖"
 export DEBIAN_FRONTEND=noninteractive
@@ -43,19 +45,19 @@ apt-get update
 apt-get install -y --no-install-recommends \
   ca-certificates git build-essential cmake ninja-build pkg-config patchelf \
   python3 python3-dev python3-pip python3-venv \
-  python3.12 python3.12-dev python3.12-venv \
-  libeigen3-dev libboost-all-dev liburdfdom-dev libssl-dev \
+  libeigen3-dev libboost-all-dev liburdfdom-dev libssl-dev zlib1g-dev \
+  libffi-dev libbz2-dev libreadline-dev libsqlite3-dev liblzma-dev \
   liboctomap-dev libassimp-dev libqhull-dev libconsole-bridge-dev
 
 if ! command -v python3.12 >/dev/null 2>&1; then
-  echo "ERROR: python3.12 未安装或不在 PATH。RISC-V wheel 需要 cp312，请安装 python3.12。" >&2
+  echo "ERROR: python3.12 未安装或不在 PATH。RISC-V wheel 需要 cp312；请先源码编译/安装 Python 3.12。" >&2
   exit 1
 fi
 
 PY312_VENV_SMOKE="$(mktemp -d)"
 if ! python3.12 -m venv "$PY312_VENV_SMOKE" >/dev/null 2>&1; then
   rm -rf "$PY312_VENV_SMOKE"
-  echo "ERROR: python3.12 无法创建 venv。请确认 python3.12-venv 已安装。" >&2
+  echo "ERROR: python3.12 无法创建 venv。请确认源码编译时启用了 ensurepip/venv 相关模块。" >&2
   exit 1
 fi
 rm -rf "$PY312_VENV_SMOKE"
@@ -67,6 +69,33 @@ export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
 export LD_LIBRARY_PATH="$PREFIX/lib:${LD_LIBRARY_PATH:-}"
 
 mkdir -p "$SRC_DIR" "$PREFIX"
+
+# -----------------------------------------------------------------------------
+# 1.5 Boost.System 实体 stub（Bianbu 4.0 / Boost 1.90）
+#     必须早于 pinocchio 的 CMake 配置阶段。
+#
+#     Boost 1.90 把 Boost.System header-only 化，不再装 libboost_system.so 实体。
+#     但 pinocchioConfig.cmake 写死 SET(Boost_NO_BOOST_CMAKE ON)，强制走老式
+#     module-mode FindBoost（只扫 .so 文件，不读 cmake-config），于是
+#     find_package(Boost COMPONENTS system) 失败：Could NOT find Boost (missing: system)。
+#     Boost.System 自 1.66 header-only，造一个空 stub .so 喂给 module-mode 即可，
+#     运行期不缺符号。只在缺 libboost_system.so 且确为 1.90 时补。
+# -----------------------------------------------------------------------------
+BOOST_LIBDIR="/usr/lib/$(uname -m)-linux-gnu"
+if [[ "$arch" == "riscv64" ]] && [[ ! -e "$BOOST_LIBDIR/libboost_system.so" ]] \
+   && ls "$BOOST_LIBDIR"/libboost_filesystem.so.1.90.* >/dev/null 2>&1; then
+  echo "==> [1.5/3] 补 Boost.System 实体 stub（Boost 1.90 header-only，无 libboost_system.so）"
+  STUB_C="$(mktemp --suffix=.c)"
+  printf '/* boost.system header-only since 1.66; empty stub for module-mode FindBoost on Boost 1.90 */\n' > "$STUB_C"
+  cc -shared -fPIC -Wl,-soname,libboost_system.so.1.90.0 \
+     -o "$BOOST_LIBDIR/libboost_system.so.1.90.0" "$STUB_C"
+  ln -sf libboost_system.so.1.90.0 "$BOOST_LIBDIR/libboost_system.so"
+  rm -f "$STUB_C"
+  ldconfig
+  echo "    已装 $BOOST_LIBDIR/libboost_system.so{,.1.90.0}"
+else
+  echo "==> [1.5/3] Boost.System stub 跳过（已有 libboost_system.so 或非 Boost 1.90 riscv64）"
+fi
 
 # -----------------------------------------------------------------------------
 # 2. hpp-fcl 2.4.4（源码编 → $PREFIX），关掉自带 python 绑定与测试减负
@@ -113,31 +142,6 @@ else
     -DBUILD_BENCHMARK=OFF
   cmake --build "$SRC_DIR/pinocchio/build" -j "$JOBS"
   cmake --install "$SRC_DIR/pinocchio/build"
-fi
-
-# -----------------------------------------------------------------------------
-# 3.5 Boost.System 实体 stub（Bianbu 4.0 / Boost 1.90）
-#    Boost 1.90 把 Boost.System header-only 化，不再装 libboost_system.so 实体。
-#    但 pinocchioConfig.cmake 写死 SET(Boost_NO_BOOST_CMAKE ON)，强制走老式
-#    module-mode FindBoost（只扫 .so 文件，不读 cmake-config），于是
-#    find_package(Boost COMPONENTS system) 失败：Could NOT find Boost (missing: system)。
-#    Boost.System 自 1.66 header-only，造一个空 stub .so 喂给 module-mode 即可，
-#    运行期不缺符号。只在缺 libboost_system.so 且确为 1.90 时补。
-# -----------------------------------------------------------------------------
-BOOST_LIBDIR="/usr/lib/$(uname -m)-linux-gnu"
-if [[ "$arch" == "riscv64" ]] && [[ ! -e "$BOOST_LIBDIR/libboost_system.so" ]] \
-   && ls "$BOOST_LIBDIR"/libboost_filesystem.so.1.90.* >/dev/null 2>&1; then
-  echo "==> [3.5/3] 补 Boost.System 实体 stub（Boost 1.90 header-only，无 libboost_system.so）"
-  STUB_C="$(mktemp --suffix=.c)"
-  printf '/* boost.system header-only since 1.66; empty stub for module-mode FindBoost on Boost 1.90 */\n' > "$STUB_C"
-  cc -shared -fPIC -Wl,-soname,libboost_system.so.1.90.0 \
-     -o "$BOOST_LIBDIR/libboost_system.so.1.90.0" "$STUB_C"
-  ln -sf libboost_system.so.1.90.0 "$BOOST_LIBDIR/libboost_system.so"
-  rm -f "$STUB_C"
-  ldconfig
-  echo "    已装 $BOOST_LIBDIR/libboost_system.so{,.1.90.0}"
-else
-  echo "==> [3.5/3] Boost.System stub 跳过（已有 libboost_system.so 或非 Boost 1.90 riscv64）"
 fi
 
 # -----------------------------------------------------------------------------
