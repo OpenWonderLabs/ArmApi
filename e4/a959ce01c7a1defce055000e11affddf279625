@@ -1,0 +1,60 @@
+python/README.md
+  h_c9d7340f891f95 99,102,110,117-119,485
+c++/README.md
+  h_c9d7340f891f95 16,102-104,109,142,144,148-150,153-155,160,163
+c/README.md
+  h_c9d7340f891f95 82-84,89,118,120,124-126,129-131,136,139
+demo/README.md
+  s_1775420fb4dc12::t_b4e70d74fdb565 35-36,42-54,56,78-80,84,103
+README.md
+  s_1775420fb4dc12::t_b8fb1183593184 80,83,88-90
+LICENSES/LICENSE
+  s_2b1879c917fa54::t_57c92cbde7840e 1-31
+LICENSES/NOTICE
+  s_2b1879c917fa54::t_8b76cc1d69be8a 1-2,4,6-8,10-100,103-115
+LICENSES/third_party/Boost.LICENSE
+  s_2b1879c917fa54::t_e2800f4b8d2377 1-37
+LICENSES/third_party/Pinocchio.LICENSE
+  s_2b1879c917fa54::t_35bbba19bcdacb 1-51
+LICENSES/third_party/RBDL.LICENSE
+  s_2b1879c917fa54::t_21e4c897a001c8 1-32
+LICENSES/third_party/hpp-fcl.LGPL-3.0.txt
+  s_2b1879c917fa54::t_cd9a12b7cfc5cb 1-893
+LICENSES/third_party/hpp-fcl.LICENSE
+  s_2b1879c917fa54::t_753d0cf5f229d8 1-56
+third_party/linux-riscv64/lib/riscv64-linux-gnu/libpinocchio_collision.so
+  s_2b1879c917fa54::t_b3fc4bfa8bb1aa 1
+third_party/linux-riscv64/lib/riscv64-linux-gnu/libpinocchio_default.so
+  s_2b1879c917fa54::t_de0ad9e3b2419d 1
+third_party/linux-riscv64/lib/riscv64-linux-gnu/libpinocchio_parsers.so
+  s_2b1879c917fa54::t_9900b4f7d895dd 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.9",
+  "base_commit_sha": "e4a959ce01c7a1defce055000e11affddf279625",
+  "prompts": {},
+  "humans": {
+    "h_c9d7340f891f95": {
+      "author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  },
+  "sessions": {
+    "s_1775420fb4dc12": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f221f-dcb4-7873-884f-e6cee0943fd2",
+        "model": "gpt-5.5"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    },
+    "s_2b1879c917fa54": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "41fd2036-baec-41ca-a8b8-879cb40e5bcd",
+        "model": "unknown"
+      },
+      "human_author": "huxiaozhe <huxiaozhe@onero.com>"
+    }
+  }
+}
