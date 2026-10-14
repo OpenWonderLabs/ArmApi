@@ -1,7 +1,5 @@
 Boost Software License - Version 1.0 - August 17th, 2003
 
-Copyright 2018 John Maddock
-
 Permission is hereby granted, free of charge, to any person or organization
 obtaining a copy of the software and accompanying documentation covered by
 this license (the "Software") to use, reproduce, display, distribute,
@@ -23,15 +21,3 @@ SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
 FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
-
-----
-
-This license applies to the following file embedded inside the Pinocchio
-distribution:
-
-  pinocchio/math/multiprecision.hpp
-
-  src/onero_driver/include/third_party/pinocchio/math/multiprecision.hpp
-  onero_api_src/third_party/include/pinocchio/math/multiprecision.hpp
-
-Reference: https://www.boost.org/LICENSE_1_0.txt

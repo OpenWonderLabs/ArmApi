@@ -27,12 +27,35 @@
 
 namespace onero_api {
 
+// Pure frame helpers exported by the installed C++ SDK. TOOL conversions are
+// relative to the current TCP pose captured by the caller; WORLD conversion
+// fails if FrameSnapshot::has_world_from_base is false.
+ONERO_CPP_API Pose transform_pose(
+    const Pose& pose,
+    CartesianFrame from_frame,
+    CartesianFrame to_frame,
+    const FrameSnapshot& frames,
+    const Pose* current_base_from_tool = nullptr);
+ONERO_CPP_API Pose apply_cartesian_delta(
+    const Pose& current_base_from_tool,
+    const CartesianDelta& delta,
+    CartesianFrame delta_frame,
+    const FrameSnapshot& frames);
+ONERO_CPP_API Pose flange_pose_to_tool(
+    const Pose& base_from_flange,
+    const RigidTransform& flange_from_tool);
+ONERO_CPP_API Pose tool_pose_to_flange(
+    const Pose& base_from_tool,
+    const RigidTransform& flange_from_tool);
+
 // ============================================================================
 // 返回值约定（不同 API 沿用不同语义，调用方需对照表理解）：
 //
 //   * 强转自 MoveResult enum（0 = SUCCESS，负数 = 各类错误，详见
 //     onero_define.h）：
-//       - movej / movel / movep
+//       - movej / movel / movep / movec
+//       - start_servop / servop / stop_servop
+//       - start_servoj / servoj / stop_servoj
 //       - send_trajectory_point / send_trajectory
 //       - cancel_trajectory
 //       - execute_buffered_trajectory / clear_trajectory_buffer
@@ -49,6 +72,7 @@ namespace onero_api {
 //
 //   * int（0 = 成功，非 0 = 错误）：
 //       - OneroDragTeaching::enable_motors
+//       - OneroDragTeaching::set_gripper_teaching_mode / set_gripper_target
 //       - OneroDragTeaching::start_recording / stop_recording
 //       - OneroDragTeaching::start_replay   / stop_replay
 //       - OneroDragTeaching::handle_command
@@ -64,6 +88,7 @@ namespace onero_api {
 //       - get_end_effector_pose
 //       - get_end_effector_pose_cached
 //       - OneroDragTeaching::get_state（失败回退为 IDLE）
+//       - OneroDragTeaching::get_gripper_status（valid=false 表示失败）
 //       - OneroGripper::get_tactile（valid=false 表示未读到有效触觉帧）
 //
 // 现状沿用历史语义不做统一以保持 ABI 稳定；后续若引入 onero_status_t
@@ -158,6 +183,63 @@ public:
     int movej(const JointArray& target, double speed_scale = 1.0, uint8_t trajectory_connect = 0);
     int movel(const Pose& pose, double speed_scale = 1.0, uint8_t trajectory_connect = 0);
     int movep(const Pose& pose, double speed_scale = 1.0, uint8_t trajectory_connect = 0);
+    /**
+     * @brief Follow the circular arc through via_pose to target_pose.
+     *
+     * All poses are absolute base_T_link7 transforms. The start pose is read
+     * from fresh feedback. Full circles and buffered mode are not supported.
+     */
+    int movec(const Pose& via_pose,
+              const Pose& target_pose,
+              double speed_scale = 1.0,
+              uint8_t trajectory_connect = 0);
+
+    /**
+     * @brief Start the SDK-owned Cartesian pose servo loop.
+     * @return MoveResult-compatible status code.
+     */
+    int start_servop();
+
+    /**
+     * @brief Atomically replace the latest Cartesian target and runtime soft limits.
+     *
+     * The call is non-blocking: success means the command was accepted, not that
+     * the target pose has already been reached. Runtime limits are intersected
+     * with the SDK's Cartesian and joint-space hard limits.
+     *
+     * pose is an absolute base_T_link7 transform (metres, quaternion wxyz).
+     * ServoP v1 controls the Link7/flange origin; no configurable TCP offset is
+     * applied. All four limit values must be finite and strictly positive.
+     */
+    int servop(const Pose& pose, const CartesianServoLimits& limits);
+
+    /**
+     * @brief Smoothly stop ServoP and hold the resulting joint position.
+     * @note This is a controlled software stop, not an emergency stop.
+     */
+    int stop_servop();
+
+    /** @brief Return a thread-safe snapshot of the current ServoP state. */
+    ServoPStatus get_servop_status();
+
+    /** @brief Start the SDK-owned 100 Hz jerk-limited joint servo. */
+    int start_servoj(const JointServoLimits& limits = {});
+
+    /**
+     * @brief Atomically replace the latest ServoJ target.
+     *
+     * Success means accepted, not reached. target_dq may be empty for a zero
+     * velocity target. The command expires after valid_for_seconds and then
+     * enters a jerk-limited controlled stop while the session remains alive.
+     */
+    int servoj(const JointArray& target_q,
+               const JointArray& target_dq = {},
+               double valid_for_seconds = 0.10);
+    // Blocks until constrained braking and its terminal command complete.
+    // Success: IDLE, zero commanded dq/ddq, arm lease released; faults: negative.
+    int stop_servoj();
+    ServoJStatus get_servoj_status();
+
     double estimate_movej_duration(const JointArray& target, double speed_scale = 1.0);
 
     int execute_buffered_trajectory();
@@ -179,6 +261,9 @@ public:
 
     int send_trajectory_point(const JointArray& positions, const JointArray& velocities);
     int send_trajectory(const std::vector<TrajectoryPoint>& trajectory);
+    // Request Move/trajectory or ServoP cancellation, not completion.
+    // Returns 0 even if idle; active ServoJ returns BUSY(-8) without effect.
+    // Use stop_servoj() to brake and close a ServoJ session.
     int cancel_trajectory();
 
     // ========== MIT 力位混合直接控制 ==========
@@ -231,9 +316,10 @@ public:
     // 与电机/夹爪共用同一根 SLCAN 链路。受保留 ID 集（电机 / 夹爪 /
     // 触觉回包 / 操纵杆 / 0x7FF）保护：发送命中保留集会直接返回错误码，不下发到总线。
     //
-    // 线程语义：注册的回调在 SDK 接收路径（即调用方运动控制线程）上
-    // 同步执行；回调内禁止重入 SDK 任何发送/运动控制方法，否则可能
-    // 与外层 receive() 自锁。
+    // 线程语义：注册的回调在所属 DeviceSession 的独立 callback worker 上
+    // 执行，不占用 BusExecutor。SDK 使用 64 项有界 FIFO；满时丢弃最旧的未开始
+    // 用户帧。回调内仍只支持 register/clear callback；其它 SDK 业务调用的重入不
+    // 属于 v1 契约。
 
     /**
      * @brief 发送一帧自定义 CAN 报文（11-bit 标准帧）。
@@ -247,11 +333,15 @@ public:
     /**
      * @brief 注册接收回调；所有非保留 ID 的入站帧都会派发到 cb。
      *        重复调用会替换前一个回调；nullptr 等价于清除。
+     *        payload 指针仅在本次回调执行期间有效，若需保留必须自行拷贝。
+     *        外部线程重复注册只等待调用开始时已经 in-flight 的 callback；新
+     *        generation callback 不延长该 fence。callback 内 self-register 只替换后续派发，不等待自身。
      */
     int register_can_frame_callback(CanFrameCallback cb);
 
     /**
-     * @brief 清除已注册的接收回调。
+     * @brief 清除已注册的接收回调。外部 clear 返回后旧 callback storage 已释放；
+     *        self-clear 只阻止后续派发，不等待自身。
      */
     int clear_can_frame_callback();
 
@@ -299,11 +389,43 @@ public:
                       const std::string& urdf_path,
                       const std::string& robot_model,
                       const std::string& mount_orientation = "horizontal");
+    /**
+     * @brief Bind hardware and optionally attach the gripper to the shared bus.
+     *
+     * with_gripper=true also selects the matching gravity-compensation scaling,
+     * but does not move the gripper or enable gripper trajectory recording.
+     */
     bool set_hardware(const std::string& device,
                       const std::string& urdf_path,
                       const std::string& robot_model,
                       const std::string& mount_orientation,
                       bool with_gripper);
+
+    /**
+     * @brief Configure how the attached gripper is handled while recording.
+     *
+     * DISABLED records the arm-only V1 format. POSITION records a V2 gripper
+     * channel while tracking the latest set_gripper_target() value. BACKDRIVE
+     * records the measured gripper opening while commanding zero effort.
+     * This setting affects recording only; replaying a V2 file automatically
+     * replays its gripper channel.
+     *
+     * @return 0 on success, negative on invalid state/configuration.
+     */
+    int set_gripper_teaching_mode(GripperTeachingMode mode);
+
+    /**
+     * @brief Queue a gripper opening target for POSITION teaching mode.
+     * @param percent Opening percentage in [0, 100].
+     * @return 0 on success, negative on invalid input/configuration.
+     */
+    int set_gripper_target(double percent);
+
+    /**
+     * @brief Return the latest gripper status; valid=false on failure.
+     */
+    GripperStatus get_gripper_status();
+
     int  enable_motors();
     int  restore_arm();
     int  restore_arm(const JointArray& target);

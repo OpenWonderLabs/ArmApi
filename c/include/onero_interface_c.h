@@ -91,6 +91,123 @@ typedef struct {
     double qw, qx, qy, qz;  // Orientation (Quaternion)
 } onero_pose_t;
 
+typedef enum {
+    ONERO_FRAME_BASE = 0,
+    ONERO_FRAME_WORLD = 1,
+    ONERO_FRAME_TOOL = 2,
+} onero_cartesian_frame_t;
+
+typedef struct {
+    double x, y, z;
+    double qw, qx, qy, qz;
+} onero_rigid_transform_t;
+
+typedef struct {
+    double x, y, z;
+    double qw, qx, qy, qz;
+} onero_cartesian_delta_t;
+
+typedef struct {
+    bool has_world_from_base;
+    onero_rigid_transform_t world_from_base;
+    onero_rigid_transform_t flange_from_tool;
+} onero_frame_snapshot_t;
+
+/**
+ * @brief Runtime Cartesian soft limits for ServoP.
+ *
+ * The SDK intersects these requested limits with its built-in Cartesian and
+ * joint-space hard limits. Translation and rotation are limited separately
+ * because their units differ.
+ */
+typedef struct {
+    double max_linear_velocity;       // m/s
+    double max_angular_velocity;      // rad/s
+    double max_linear_acceleration;   // m/s^2
+    double max_angular_acceleration;  // rad/s^2
+} onero_cartesian_servo_limits_t;
+
+typedef enum {
+    ONERO_SERVOP_STATE_IDLE = 0,
+    ONERO_SERVOP_STATE_RUNNING = 1,
+    ONERO_SERVOP_STATE_LIMIT_TRANSITION = 2,
+    ONERO_SERVOP_STATE_BRAKING = 3,
+    ONERO_SERVOP_STATE_HOLDING = 4,
+    ONERO_SERVOP_STATE_FAULT = 5,
+} onero_servop_state_t;
+
+typedef enum {
+    ONERO_SERVOP_LIMIT_NONE = 0,
+    ONERO_SERVOP_LIMIT_CARTESIAN_VELOCITY = 1u << 0,
+    ONERO_SERVOP_LIMIT_CARTESIAN_ACCELERATION = 1u << 1,
+    ONERO_SERVOP_LIMIT_JOINT_POSITION = 1u << 2,
+    ONERO_SERVOP_LIMIT_JOINT_VELOCITY = 1u << 3,
+    ONERO_SERVOP_LIMIT_JOINT_ACCELERATION = 1u << 4,
+    ONERO_SERVOP_LIMIT_SINGULARITY = 1u << 5,
+    ONERO_SERVOP_LIMIT_COMMAND_TIMEOUT = 1u << 6,
+    ONERO_SERVOP_LIMIT_FEEDBACK_STALE = 1u << 7,
+} onero_servop_limit_flag_t;
+
+/** @brief Snapshot returned by onero_get_servop_status(). */
+typedef struct {
+    onero_servop_state_t state;
+    uint64_t accepted_sequence;
+    uint64_t applied_sequence;
+    double command_age_s;
+    onero_cartesian_servo_limits_t requested_limits;
+    onero_cartesian_servo_limits_t effective_limits;
+    double joint_feasibility_scale;
+    uint32_t limit_flags;  // bitwise OR of onero_servop_limit_flag_t values
+    int last_error;
+    onero_pose_t target_pose;
+    onero_pose_t actual_pose;
+} onero_servop_status_t;
+
+/**
+ * Per-joint ServoJ limits. max_velocity is a symmetric magnitude limit for
+ * both velocity directions. Empty arrays (count == 0) request the SDK's
+ * configured hard limit.
+ */
+typedef struct {
+    onero_joint_array_t max_velocity;
+    onero_joint_array_t max_acceleration;
+    onero_joint_array_t max_jerk;
+} onero_joint_servo_limits_t;
+
+typedef enum {
+    ONERO_SERVOJ_STATE_IDLE = 0,
+    ONERO_SERVOJ_STATE_RUNNING = 1,
+    ONERO_SERVOJ_STATE_BRAKING = 2,
+    ONERO_SERVOJ_STATE_HOLDING = 3,
+    ONERO_SERVOJ_STATE_FAULT = 4,
+} onero_servoj_state_t;
+
+typedef enum {
+    ONERO_SERVOJ_LIMIT_NONE = 0,
+    ONERO_SERVOJ_LIMIT_COMMAND_TIMEOUT = 1u << 0,
+    ONERO_SERVOJ_LIMIT_FEEDBACK_STALE = 1u << 1,
+    ONERO_SERVOJ_LIMIT_JOINT_POSITION = 1u << 2,
+    ONERO_SERVOJ_LIMIT_OTG_INFEASIBLE = 1u << 3,
+    ONERO_SERVOJ_LIMIT_DEADLINE_MISS = 1u << 4,
+} onero_servoj_limit_flag_t;
+
+typedef struct {
+    onero_servoj_state_t state;
+    uint64_t accepted_sequence;
+    uint64_t applied_sequence;
+    uint64_t sent_frame_count;
+    uint64_t deadline_miss_count;
+    uint64_t otg_update_count;
+    uint64_t otg_replan_count;
+    double command_age_s;
+    uint32_t limit_flags;
+    int last_error;
+    onero_joint_array_t target_q;
+    onero_joint_array_t commanded_q;
+    onero_joint_array_t commanded_dq;
+    onero_joint_array_t commanded_ddq;
+} onero_servoj_status_t;
+
 /**
  * @brief C-compatible arm state read from motors
  *
@@ -151,6 +268,18 @@ typedef enum {
 } onero_drag_teaching_state_t;
 
 /**
+ * @brief Gripper behavior while recording a drag-teaching trajectory.
+ *
+ * This mode only selects recording behavior. Replaying a V2 trajectory that
+ * contains a gripper channel automatically replays that channel.
+ */
+typedef enum {
+    ONERO_GRIPPER_TEACHING_DISABLED  = 0,
+    ONERO_GRIPPER_TEACHING_POSITION  = 1,
+    ONERO_GRIPPER_TEACHING_BACKDRIVE = 2,
+} onero_gripper_teaching_mode_t;
+
+/**
  * @brief Opaque handle for the drag-teaching instance
  */
 typedef void* onero_drag_teaching_handle;
@@ -165,6 +294,7 @@ typedef void* onero_drag_teaching_handle;
 //   * int 返回 = MoveResult（0 = SUCCESS，负数 = 错误码，详见
 //     onero_define.h::MoveResult）：
 //       - onero_movej / movel / movep
+//       - onero_start_servop / onero_servop / onero_stop_servop
 //       - onero_send_trajectory_point / onero_send_trajectory
 //       - onero_cancel_trajectory
 //       - onero_execute_buffered_trajectory
@@ -172,6 +302,8 @@ typedef void* onero_drag_teaching_handle;
 //       - onero_enable_motors / onero_disable_motors
 //       - onero_gripper_get_tactile（函数成功不代表 out.valid，一切以 out.valid 为准）
 //       - onero_drag_teaching_enable_motors
+//       - onero_drag_teaching_set_gripper_teaching_mode
+//       - onero_drag_teaching_set_gripper_target
 //       - onero_drag_teaching_start_recording / onero_drag_teaching_stop_recording
 //       - onero_drag_teaching_start_replay   / onero_drag_teaching_stop_replay
 //       - onero_drag_teaching_handle_command
@@ -190,6 +322,7 @@ typedef void* onero_drag_teaching_handle;
 //       - onero_get_joint_velocities
 //       - onero_get_arm_state_from_motor / _cached
 //       - onero_gripper_status
+//       - onero_drag_teaching_gripper_status
 //       - onero_get_end_effector_pose
 //       - onero_get_end_effector_pose_cached
 //       - onero_drag_teaching_get_state
@@ -255,6 +388,32 @@ ONERO_API int onero_restore_arm_dual_to(onero_handle left,
 
 // --- Motion ---
 
+/** Pure SE(3) helpers. Return 0 on success and -1 on invalid/missing data. */
+ONERO_API int onero_transform_pose(
+    const onero_pose_t* pose,
+    onero_cartesian_frame_t from_frame,
+    onero_cartesian_frame_t to_frame,
+    const onero_frame_snapshot_t* frames,
+    const onero_pose_t* current_base_from_tool,
+    onero_pose_t* out_pose);
+
+ONERO_API int onero_apply_cartesian_delta(
+    const onero_pose_t* current_base_from_tool,
+    const onero_cartesian_delta_t* delta,
+    onero_cartesian_frame_t delta_frame,
+    const onero_frame_snapshot_t* frames,
+    onero_pose_t* out_pose);
+
+ONERO_API int onero_flange_pose_to_tool(
+    const onero_pose_t* base_from_flange,
+    const onero_rigid_transform_t* flange_from_tool,
+    onero_pose_t* out_pose);
+
+ONERO_API int onero_tool_pose_to_flange(
+    const onero_pose_t* base_from_tool,
+    const onero_rigid_transform_t* flange_from_tool,
+    onero_pose_t* out_pose);
+
 ONERO_API int onero_movej(onero_handle handle,
                             const onero_joint_array_t* target,
                             double speed_scale,
@@ -269,6 +428,62 @@ ONERO_API int onero_movep(onero_handle handle,
                             const onero_pose_t* pose,
                             double speed_scale,
                             uint8_t trajectory_connect);
+
+/**
+ * @brief Follow the circular arc from fresh feedback through via_pose to target_pose.
+ *
+ * Poses are absolute base_T_link7 transforms. Full circles and buffered mode
+ * (trajectory_connect != 0) are intentionally unsupported.
+ */
+ONERO_API int onero_movec(onero_handle handle,
+                          const onero_pose_t* via_pose,
+                          const onero_pose_t* target_pose,
+                          double speed_scale,
+                          uint8_t trajectory_connect);
+
+/** @brief Start the SDK-owned Cartesian pose servo loop. */
+ONERO_API int onero_start_servop(onero_handle handle);
+
+/**
+ * @brief Atomically replace the latest ServoP target and runtime soft limits.
+ *
+ * This call is non-blocking. A zero return means the command was accepted, not
+ * that the target pose has already been reached.
+ * pose is the absolute base_T_link7 transform (metres, quaternion wxyz).
+ * ServoP v1 controls the Link7/flange origin; no TCP offset is applied. All
+ * four limit values must be finite and strictly positive.
+ */
+ONERO_API int onero_servop(onero_handle handle,
+                           const onero_pose_t* pose,
+                           const onero_cartesian_servo_limits_t* limits);
+
+/**
+ * @brief Smoothly stop ServoP and hold the resulting joint position.
+ * @note This is a controlled software stop, not an emergency stop.
+ */
+ONERO_API int onero_stop_servop(onero_handle handle);
+
+/** @brief Return the latest ServoP state snapshot. */
+ONERO_API onero_servop_status_t onero_get_servop_status(onero_handle handle);
+
+/** Start the SDK-owned 100 Hz jerk-limited joint servo. */
+ONERO_API int onero_start_servoj(onero_handle handle,
+                                 const onero_joint_servo_limits_t* limits);
+
+/**
+ * Replace the latest ServoJ target. target_dq may be NULL for zero velocity.
+ * valid_for_seconds must be finite and in (0, 10].
+ */
+ONERO_API int onero_servoj(onero_handle handle,
+                           const onero_joint_array_t* target_q,
+                           const onero_joint_array_t* target_dq,
+                           double valid_for_seconds);
+
+/** Wait for constrained braking and the terminal command.
+ * Success: IDLE, zero commanded dq/ddq, arm resource released; faults: negative.
+ */
+ONERO_API int onero_stop_servoj(onero_handle handle);
+ONERO_API onero_servoj_status_t onero_get_servoj_status(onero_handle handle);
 
 // --- Buffer Management ---
 
@@ -362,6 +577,11 @@ ONERO_API int onero_send_trajectory(onero_handle handle,
                                         const onero_traj_point_t* points,
                                         int num_points);
 
+/**
+ * @brief Request Move/trajectory or ServoP cancellation, not completion.
+ * @return 0 if recorded (also if idle); -8 without effect for active ServoJ.
+ * Use onero_stop_servoj() to brake and close a ServoJ session.
+ */
 ONERO_API int onero_cancel_trajectory(onero_handle handle);
 
 // --- Optional arm-owned gripper API ---
@@ -385,13 +605,15 @@ ONERO_API int onero_gripper_get_tactile(onero_handle handle,
 // （电机 0x01-0x07 / 夹爪 / 触觉回包 / 操纵杆 / 0x7FF）的帧并返回错误码，不下发到总线。
 // 接收端：所有非保留 ID 的入站帧会派发到已注册回调。
 //
-// 线程语义：回调在 SDK 接收路径（即调用方运动控制线程）上同步执行；
-// 回调内禁止重入 SDK 任何发送/运动控制方法，否则可能与外层 receive() 自锁。
+// 线程语义：回调在所属 DeviceSession 的独立 callback worker 上执行，不
+// 占用 BusExecutor。SDK 使用 64 项有界 FIFO；满时丢弃最旧的未开始用户帧。
+// 回调内仍只支持注册/清除 callback；其它 SDK 业务调用的重入语义不属于 v1
+// 契约。
 // payload 指针仅在回调执行期间有效；若需保留请自行拷贝。
 //
 // 错误码（详见 onero_define.h::ONERO_ERR_RAW_FRAME_*）：
-//   0 = 成功；负数 = 失败（INVALID_LEN / INVALID_ID / RESERVED_ID /
-//   PORT_NOT_OPEN / SEND_FAILED）
+//   0 = 成功；-8 = 运动通道 BUSY；其余负数 = 失败（INVALID_LEN /
+//   INVALID_ID / RESERVED_ID / PORT_NOT_OPEN / SEND_FAILED）
 
 /**
  * @brief 用户接收回调签名（C ABI）
@@ -420,13 +642,17 @@ ONERO_API int onero_send_can_frame(onero_handle handle,
 /**
  * @brief 注册接收回调；所有非保留 ID 的入站帧都会派发到 cb。
  *        重复调用会替换前一个回调；cb==NULL 等价于 onero_clear_can_frame_callback。
+ *        外部线程重复注册只等待调用开始时已经 in-flight 的 callback，因而返回后旧
+ *        user_data 不再被 SDK 引用；新 generation callback 不延长该 fence。callback 内 self-register 只替换后续派发，
+ *        不等待自身；旧 user_data 必须保持有效到当前 callback 返回。
  */
 ONERO_API int onero_register_can_frame_callback(onero_handle handle,
                                                 onero_can_frame_callback_t cb,
                                                 void* user_data);
 
 /**
- * @brief 清除已注册的接收回调（user_data 不再被引用）。
+ * @brief 清除已注册的接收回调。外部线程调用返回后 user_data 不再被 SDK
+ *        引用；self-clear 时 user_data 必须保持有效直到当前 callback 返回。
  */
 ONERO_API int onero_clear_can_frame_callback(onero_handle handle);
 
@@ -457,7 +683,8 @@ ONERO_API bool onero_drag_teaching_set_hardware(onero_drag_teaching_handle handl
                                            const char* robot_model,
                                            const char* mount_orientation);
 
-// 同 onero_drag_teaching_set_hardware，额外用 with_gripper 选择带夹爪的重力补偿缩放占位参数。
+// 同 onero_drag_teaching_set_hardware；with_gripper=true 会把夹爪挂载到共享总线并
+// 选择匹配的重力补偿缩放，但不会自动移动夹爪或开启夹爪轨迹录制。
 // with_gripper=false 时与上面的 5 参版本行为完全一致。
 ONERO_API bool onero_drag_teaching_set_hardware_ex(onero_drag_teaching_handle handle,
                                            const char* device,
@@ -465,6 +692,31 @@ ONERO_API bool onero_drag_teaching_set_hardware_ex(onero_drag_teaching_handle ha
                                            const char* robot_model,
                                            const char* mount_orientation,
                                            bool with_gripper);
+
+/**
+ * @brief Select gripper behavior while recording.
+ *
+ * with_gripper must have been enabled in onero_drag_teaching_set_hardware_ex
+ * for POSITION or BACKDRIVE. DISABLED records an arm-only V1 trajectory.
+ */
+ONERO_API int onero_drag_teaching_set_gripper_teaching_mode(
+    onero_drag_teaching_handle handle,
+    onero_gripper_teaching_mode_t mode);
+
+/**
+ * @brief Queue a gripper opening target in percent for POSITION recording.
+ * @param percent Valid range is [0, 100].
+ */
+ONERO_API int onero_drag_teaching_set_gripper_target(
+    onero_drag_teaching_handle handle,
+    double percent);
+
+/**
+ * @brief Return the latest drag-teaching gripper feedback.
+ * @return A zero-initialized status with valid=false on failure.
+ */
+ONERO_API onero_gripper_status_t onero_drag_teaching_gripper_status(
+    onero_drag_teaching_handle handle);
 
 ONERO_API int onero_drag_teaching_enable_motors(onero_drag_teaching_handle handle);
 

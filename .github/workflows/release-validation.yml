@@ -1,0 +1,190 @@
+name: Validate release package
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+jobs:
+  inspect-package:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check version for a tag build
+        if: startsWith(github.ref, 'refs/tags/')
+        run: test "$GITHUB_REF_NAME" = "v$(cat VERSION)"
+      - run: sudo apt-get update && sudo apt-get install -y zstd
+      - name: Check shared C++ headers in both include orders
+        run: python3.12 tools/check_cpp_headers.py
+      - name: Static inspection only (not release acceptance)
+        run: python3.12 tools/verify_release.py --static-only
+      - name: Check gate failure cases
+        run: |
+          python3.12 tools/test_conda_html.py
+          python3.12 tools/test_release_checks.py
+      - name: Linux x86_64 consumer simulation regression (not multi-platform acceptance)
+        run: |
+          python3.12 -m pip install 'numpy>=2,<2.3' loguru
+          python3.12 -m pip install --no-index --no-deps --target "$RUNNER_TEMP/wheels" python/wheels/linux-x86_64/*.whl gripper/python/wheels/linux-x86_64/*.whl
+          cmake -S demo -B "$RUNNER_TEMP/consumer-build" > "$RUNNER_TEMP/consumer-build.log" 2>&1
+          cmake --build "$RUNNER_TEMP/consumer-build" --parallel 2 >> "$RUNNER_TEMP/consumer-build.log" 2>&1
+          for kind in servoj servop; do
+            env LD_LIBRARY_PATH="$PWD/runtime/linux-x86_64/lib" "$RUNNER_TEMP/consumer-build/${kind}_demo_cpp" --simulate > "$RUNNER_TEMP/$kind.log" 2>&1
+            echo "PASS: C++ $kind simulation"
+          done
+          for order in arm-first gripper-first; do
+            env -u LD_LIBRARY_PATH PYTHONPATH="$RUNNER_TEMP/wheels" python3.12 -X faulthandler tools/servo_regression.py --import-order "$order" > "$RUNNER_TEMP/$order.log" 2>&1
+            echo "PASS: wheel $order sustained simulation"
+          done
+      - name: Require a clean checkout
+        run: test -z "$(git status --porcelain)"
+
+  # Full acceptance runs only for an explicitly selected candidate or tag.
+  # Execution logs follow the build repository's visibility.
+  candidate-native:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/') || startsWith(github.ref, 'refs/heads/validate/')
+    needs: inspect-package
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            platform: linux-x86_64
+            channel: linux/linux-64
+          - os: ubuntu-22.04-arm
+            platform: linux-arm64
+            channel: linux/linux-aarch64
+          - os: windows-2022
+            platform: windows-x86_64
+            channel: windows/win-64
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - name: Preserve exact public input bytes on Windows
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: mamba-org/setup-micromamba@v3
+        with:
+          environment-name: sdk-validation
+          environment-file: python/environments/${{ matrix.platform }}-py312-explicit.txt
+          init-shell: bash
+          cache-downloads: true
+      - name: Install exact candidate Python 3.12 packages
+        run: micromamba install -y -n sdk-validation --no-deps ./python/conda_channel/${{ matrix.channel }}/*-py312*.conda
+      - name: Install other ABIs and execute native offline suite
+        env:
+          TARGET_PLATFORM: ${{ matrix.platform }}
+          CHANNEL_SUBDIR: ${{ matrix.channel }}
+        run: |
+          channel=$(python -c 'import os; from pathlib import Path; print((Path("python/conda_channel")/os.environ["CHANNEL_SUBDIR"]).resolve().parent.as_uri())')
+          smoke_args=()
+          for minor in 3.10 3.11 3.13; do
+            prefix="$RUNNER_TEMP/sdk-$minor"
+            micromamba create -y -p "$prefix" --override-channels -c "$channel" -c conda-forge "python=$minor" "oneroarm=$(cat VERSION)"
+            executable="$prefix/bin/python"
+            if [[ "$RUNNER_OS" == Windows ]]; then executable="$prefix/python.exe"; fi
+            smoke_args+=(--smoke-python "$minor=$executable")
+          done
+          python tools/validate_platform.py --execution-mode native \
+            --output-dir "$RUNNER_TEMP/sdk-results" \
+            --log-id "actions-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${TARGET_PLATFORM}" "${smoke_args[@]}"
+      - name: Retain execution log and platform record
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: execution-${{ matrix.platform }}
+          path: |
+            ${{ runner.temp }}/sdk-results/*.json
+            ${{ runner.temp }}/sdk-results/execution.log
+          retention-days: 90
+          if-no-files-found: error
+
+  candidate-riscv-qemu:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/') || startsWith(github.ref, 'refs/heads/validate/')
+    needs: inspect-package
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+        with:
+          platforms: riscv64
+      - name: Execute RISC-V offline suite in QEMU (not native board validation)
+        run: |
+          mkdir -p "$RUNNER_TEMP/sdk-results"
+          docker run --rm --platform linux/riscv64 \
+            -v "$PWD:/sdk:ro" -v "$RUNNER_TEMP/sdk-results:/results" \
+            -e DEBIAN_FRONTEND=noninteractive -e PYTHONDONTWRITEBYTECODE=1 \
+            -e LOG_ID="actions-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-linux-riscv64" \
+            ubuntu:24.04 bash -euc '
+              apt-get update
+              apt-get install -y build-essential cmake python3.12-venv python3-numpy python3-loguru libboost-all-dev liburdfdom-dev libssl-dev zlib1g-dev liboctomap-dev libassimp-dev libqhull-dev libconsole-bridge-dev
+              python3.12 -m venv --system-site-packages /tmp/sdk-python
+              /tmp/sdk-python/bin/python /sdk/tools/validate_platform.py --execution-mode qemu --output-dir /results --log-id "$LOG_ID"
+            '
+      - name: Retain QEMU log and platform record
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: execution-linux-riscv64
+          path: |
+            ${{ runner.temp }}/sdk-results/*.json
+            ${{ runner.temp }}/sdk-results/execution.log
+          retention-days: 90
+          if-no-files-found: error
+
+  candidate-acceptance:
+    needs: [candidate-native, candidate-riscv-qemu]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: execution-*
+          path: ${{ runner.temp }}/execution-records
+      - name: Bind all fresh execution records to this candidate
+        run: |
+          python3.12 - <<'PY'
+          import hashlib, json, os, sys
+          from pathlib import Path
+          sys.path.insert(0, 'tools')
+          from validate_platform import check_evidence
+          root = Path.cwd()
+          evidence = {'sdk_version': (root/'VERSION').read_text().strip(),
+                      'native_platform_checks': {}, 'emulated_platform_checks': {}}
+          for path in (Path(os.environ['RUNNER_TEMP'])/'execution-records').glob('*/*.json'):
+              payload = json.loads(path.read_text())
+              if payload['sdk_version'] != (root/'VERSION').read_text().strip():
+                  raise SystemExit('Evidence version differs from candidate')
+              for group in ('native_platform_checks', 'emulated_platform_checks'):
+                  for key, record in payload.get(group, {}).items():
+                      assert key not in evidence[group], key
+                      assert record['execution_log']['sha256'] == hashlib.sha256(path.with_name('execution.log').read_bytes()).hexdigest(), key
+                      evidence[group][key] = record
+          errors = check_evidence(root, evidence)
+          if errors:
+              raise SystemExit('\n'.join(errors))
+          evidence['status'] = 'passed'
+          (Path(os.environ['RUNNER_TEMP'])/'validation-evidence.json').write_text(json.dumps(evidence, indent=2)+'\n')
+          PY
+      - run: sudo apt-get update && sudo apt-get install -y zstd
+      - run: python3.12 -m pip install 'numpy>=2,<2.3' loguru
+      - name: Require complete acceptance before archive creation
+        run: python3.12 tools/make_release_archive.py --evidence "$RUNNER_TEMP/validation-evidence.json" --output "$RUNNER_TEMP/validated-sdk.tar.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: accepted-release-candidate
+          path: |
+            ${{ runner.temp }}/validated-sdk.tar.gz
+            ${{ runner.temp }}/validation-evidence.json
+            SHA256SUMS
+          if-no-files-found: error

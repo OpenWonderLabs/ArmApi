@@ -1,179 +1,98 @@
-# OneroArm Demo
+# SDK 示例使用说明
 
-按动作类型组织的 7 组示例，每组都覆盖 **C / C++ / Python** 三种调用方式：
+Ubuntu 24.04 riscv64 可由本目录 CMake 自动选择对应库；环境配置见 [RISC-V 安装说明](../RISC_V_GUIDE.md)。
 
-```
-demo/
-├── CMakeLists.txt           # 一键编译所有 C / C++ demo
-├── c/                       # 7 个纯 C ABI 示例   → ../c/   包
-├── cpp/                     # 7 个 C++ RAII 示例  → ../c++/ 包
-└── python/                  # 7 个 Python 示例   → import oneroarm
-```
+本目录提供三种语言的接口示例。C 和 C++ 使用同一组 11 个主题，Python 按基础运动与高级功能分目录；详细清单见 [Python 示例](python/README.md)。示例中的位姿和设备名只是演示输入，运行运动程序前须按实际机械臂、安装方向、工具和工作区核对。
 
-| 名字 | 演示内容 | 序列 |
+## 一、示例索引
+
+| C/C++ 名称 | 演示接口 | 运行效果 |
 |---|---|---|
-| [`full_demo`](#full)                   | 综合：单关节 + movep + movel 全流程               | `enable → restore_arm()(zero) → movej(joint4=0.3) → movep(target) → restore_arm()(zero) → movel(target) → restore_arm()(zero) → disable` |
-| [`movej_demo`](#movej)                 | 单一 `movej` 关节空间运动                          | `enable → restore_arm()(zero) → movej(target) → restore_arm()(zero) → disable` |
-| [`movep_demo`](#movep)                 | 单一 `movep` 笛卡尔点到点（自动避碰）              | `enable → restore_arm()(zero) → movep(target) → restore_arm()(zero) → disable` |
-| [`movel_demo`](#movel)                 | 单一 `movel` 笛卡尔直线                            | `enable → restore_arm()(zero) → movel(target) → restore_arm()(zero) → disable` |
-| [`buffered_traj_demo`](#buffered_traj) | `trajectory_connect` 缓冲多段 move + `execute_buffered_trajectory` | `enable → restore_arm() → movej(joint4=0.3, tc=1) → movep(target, tc=1) → movej(zero, tc=1) → execute_buffered_trajectory → disable` |
-| [`can_frame_demo`](#can_frame)         | 原始 CAN 帧收发最小示例（**不使能电机**） | `register_cb → send_can_frame(0x100, DEADBEEF) → pump×5 → clear_cb` |
-| [`drag_teaching_demo`](#drag_teaching) | 拖动示教（零力录制 + 回放，纯 API、无 ROS）       | `initialize → set_hardware → tick(100Hz) ↔ stdin: 1=录制 / 2=停止 / 3=回放 / 4=选历史 / 5=退出` |
+| full_demo | restore_arm、MoveJ、MoveP、MoveL | 顺序执行多个阻塞运动 |
+| movej_demo | MoveJ | 关节空间到目标，末端路径不保证直线 |
+| movep_demo | MoveP | 笛卡尔点到点 |
+| movel_demo | MoveL | 笛卡尔直线 |
+| buffered_traj_demo | trajectory_connect、execute_buffered_trajectory | 将 MoveJ/L/P 路点放入规划缓冲后执行 |
+| can_frame_demo | send_can_frame、callback、pump | 发送非保留 ID 帧，不使能臂电机 |
+| drag_teaching_demo | 拖动示教录制、回放 | 依示例命令进入录制或回放 |
+| frame_demo | BASE/WORLD/TOOL 坐标变换 | 纯计算，无硬件控制 |
+| new_motion_demo | MoveC | 用当前反馈位姿、via、target 规划圆弧 |
+| servoj_demo | ServoJ | 周期性关节目标跟踪与状态查询 |
+| servop_demo | ServoP | 周期性笛卡尔目标跟踪与状态查询 |
 
-> **关节目标统一为 `joint4=0.3`**；**笛卡尔目标统一为左臂可达位** `(x=0.30, y=0.30, z=0.30 / 0.40)`，单位四元数 `(w=1, x=0, y=0, z=0)`。各 demo 文件**最顶部** `TARGET_*` / `JOINT_*` 常量集中可改。
->
-> **`buffered_traj_demo` 演示的是"轨迹缓冲"——即 `movej/movel/movep` 最后一个参数 `trajectory_connect=1` 累积进内部 `trajectory_buffer_`，再由 `execute_buffered_trajectory` 串成一条平滑轨迹一次性下发**。它和 `send_trajectory` / `send_trajectory_point` 完全不是同一回事——后者是直接给关节电机下发 MIT 力矩控制（不规划、不入此 buffer），调用前必须自己规划好整段轨迹，本仓库 demo 不直接演示。详见外层 [`README.md` §四](../README.md#四接口速查表以-c-为例)。
+每个主题有 demo/c/<name>_demo.c 和 demo/cpp/<name>_demo.cpp 两份源码。CMake 会在受支持平台生成同名的 _demo_c / _demo_cpp 可执行文件；Windows 跳过 C 版 drag_teaching_demo。new_motion、servoj、servop 是在线/新增接口示例；其结果须结合状态和真实反馈判断。软件 stop/cancel 不是安全级急停。
 
-CMakeLists 通过 `foreach()` 给每个名字声明 `<name>_demo_c` 与 `<name>_demo_cpp` 两个可执行；
-两者分别链 `oneroarm_c` / `oneroarm_cpp` 这两个 IMPORTED target（同二进制 `liboneroarm.so`，
-区别仅在公开头）。Python demo 由用户直接 `python demo/python/<name>_demo.py` 运行，无需 cmake。
+Python 的 movej.py、movel.py、movep.py、movec.py、servoj.py、servop.py 对应基本运动；advanced/ 包含缓冲轨迹、MIT、Frame、夹爪、拖动示教与原始 CAN。直接轨迹 send_trajectory_point / send_trajectory 不进入 trajectory_connect 的 MoveJ/L/P 规划缓冲。MoveC 不支持缓冲模式。接口参数与返回值见 [C](../c/README.md)、[C++](../c++/README.md)、[Python](../python/README.md) 文档。
 
----
+## 二、编译 C/C++
 
-## 编译 C / C++（Linux）
+C/C++ 示例的头文件已在包内；预编译动态库的传递依赖须由对应平台环境提供。Linux x86_64 可按 [runtime 说明](../runtime/README.md)设置 LD_LIBRARY_PATH。Linux arm64、Windows x86_64 使用匹配的 Conda 环境或等价的依赖集合。
 
-demo 编译本身只需要 C/C++ 编译器、CMake 和 Ninja。x86_64 / arm64 上如果想用
-conda 统一提供工具链和运行时依赖，可以创建一个构建环境：
-
-```bash
-conda create -n oneroarm_cpp -c conda-forge \
-    cmake ninja compilers eigen boost pinocchio hpp-fcl urdfdom pkg-config -y
-conda activate oneroarm_cpp
-```
-
-RISC-V 上不需要 conda，也不需要源码编译 pinocchio / hpp-fcl；这些 runtime 已随包放在
-`third_party/linux-riscv64/lib/riscv64-linux-gnu/`，并由 SDK 内置 RPATH 自动解析。
-RISC-V 只需补齐构建工具：
+从本目录执行：
 
 ```bash
-sudo apt-get update
-sudo apt-get install -y --no-install-recommends \
-    build-essential cmake ninja-build
+cmake -S . -B build -G Ninja
+cmake --build build
 ```
 
-随后编译 demo：
+Linux arm64 配置时提供匹配 Conda 环境：cmake -S . -B build -G Ninja -DONERO_DEPENDENCY_DIR="$CONDA_PREFIX/lib"。Linux 的 C++ 链接会显式使用匹配的 libstdc++.so.6，并检查共享库的未解析符号。
+
+CMake 按系统架构选择 c/ 与 c++/ 中的目标库；缺少对应二进制的平台会在配置阶段失败。Linux x86_64 如使用包内 runtime，可从 SDK 根目录执行：
 
 ```bash
-cd demo
-mkdir -p build && cd build
-cmake .. -G Ninja
-cmake --build .
+export LD_LIBRARY_PATH="$PWD/runtime/linux-x86_64/lib"
+./demo/build/frame_demo_cpp
 ```
 
-CMake 自动按 `CMAKE_SYSTEM_PROCESSOR` 选 `linux-x86_64` / `linux-arm64` / `linux-riscv64`。`BUILD_RPATH` 已写进可执行文件，
-**无需 `LD_LIBRARY_PATH`** 即可定位 `liboneroarm.so`：
+frame_demo 为纯坐标计算。要运行运动示例，先检查相应源码的设备路径、机型、目标和 WOANARM_RUN_MOTION 门禁；例如 new_motion_demo 要传实际串口设备路径。确认目标对实机可达且工作区安全后再运行。
+
+ServoJ/ServoP 的四份 C/C++ 示例使用独立命令行门禁，默认只输出用法并返回 2，不构造 SDK 对象。真机必须同时传 `--device DEVICE --run`，例如 `./demo/build/servoj_demo_c --device /dev/ttyACM0 --run`；机型固定为 A1 左臂、竖直安装、无夹爪，运行前核对源码配置。C 配置没有 `simulation_mode`，因此 CI 只编译链接 C 版实际调用并检查缺参退出，C 版运行验收须使用专用测试设备或测试设施。
+
+C++ 支持显式无硬件仿真：
 
 ```bash
-./full_demo_c            ./full_demo_cpp
-./movej_demo_c           ./movej_demo_cpp
-./movep_demo_c           ./movep_demo_cpp
-./movel_demo_c           ./movel_demo_cpp
-./buffered_traj_demo_c   ./buffered_traj_demo_cpp
-./can_frame_demo_c       ./can_frame_demo_cpp
-./drag_teaching_demo_c   ./drag_teaching_demo_cpp
+./demo/build/servoj_demo_cpp --simulate
+./demo/build/servop_demo_cpp --simulate
 ```
 
-> 头文件**不需要**额外 `find_package(Eigen3 / pinocchio / hpp-fcl / Boost / OpenSSL)`——
-> SDK 已用 `-fvisibility=hidden` 把这些类型吸收进 `liboneroarm.so` 的导出表。
-> x86_64 / arm64 运行时通过 conda env 提供传递依赖；RISC-V 运行时通过仓库
-> `third_party/linux-riscv64/` 与 SDK 内置 RPATH 提供传递依赖。正常情况下无需
-> `LD_LIBRARY_PATH`。
+四份示例均执行配置、有限值反馈检查、使能、启动、10 ms 周期更新、状态/反馈判定、停止、失能和销毁。ServoJ 在初始反馈基础上让首轴增加 0.01 rad，逐轴速度/加速度/加加速度限制分别为 0.1 rad/s、0.2 rad/s²、0.05 rad/s³，每次目标有效期 0.5 s；打印状态、已接受/已应用序号、下发计数、限制标志、错误码、命令年龄和反馈。ServoP 将初始末端 x 增加 0.001 m，输入是绝对 `base_T_link7` 位姿（米、wxyz 四元数，没有隐含 TCP 偏移）；四个软限制为 0.02 m/s、0.1 rad/s、0.05 m/s²、0.2 rad/s²。
 
-### 在已有 conda env 上加构建工具链
+示例最多等待 20 s，必须观察到新目标已应用、HOLDING 状态及连续 3 次反馈达标：ServoJ 误差 <0.001 rad 且下发计数 ≥5；ServoP 平移误差 <0.0002 m、旋转误差 <0.005 rad。更新返回 0 不代表到位。失败、FAULT、超时及 Ctrl-C 均走停止与清理路径；正常返回 0，失败返回 1，参数错误返回 2，正常处理的中断返回 130。仿真通过只说明这些离线用例通过，不表示实物跟踪性能通过。自动验收命令见 [发布检查](../tools/README.md)。
 
-如果想在 x86_64 / arm64 上复用现有 conda env（例如已经装了 `oneroarm` 的 Python 消费环境），只需补齐 build-only 依赖；运行时 `pinocchio` / `hpp-fcl` / `urdfdom` 已随 `oneroarm` 包拉进同一个 env，**不要重装**：
-
-```bash
-conda activate oneroarm                  # 已有的目标 env
-conda install -c conda-forge cmake ninja compilers eigen boost pkg-config -y
-```
-
-随后回到 `demo/build` 重新 `cmake .. -G Ninja`。如果同一个 `build/` 之前用过别的 generator，`CMakeCache.txt` 会把 generator 锁死，再次 `cmake ..` 会报 `CMake was unable to find a build program corresponding to "Ninja"`——清掉整个 `build/` 重新来：
-
-```bash
-rm -rf build && mkdir build && cd build
-cmake .. -G Ninja
-cmake --build .
-```
-
-> 报错"找不到 Ninja"通常有两种成因：① 当前 env 里**根本没装** `ninja`（多见于直接 `conda activate oneroarm` 的 Python 消费环境，没有 build 工具链）；② env 已装 `ninja` 但 `build/CMakeCache.txt` 锁的是上一次的 generator。先确认 `which ninja` 指向当前 env，再决定是补装工具链还是清 build 目录。
-
-### 版本冲突怎么办
-
-`liboneroarm.so` 期望的 SONAME 在 [c/README.md §三](../c/README.md#三运行时依赖) 列出。x86_64 / arm64 常见症状与处理：
-
-| 症状 | 原因 | 处理 |
-|---|---|---|
-| `cannot open shared object file: libpinocchio_*.so.3.1` | env 里 pinocchio 大版本对不上 SDK 期望的 SONAME | `conda install -c conda-forge "pinocchio=3.1.*" "hpp-fcl=2.4.*" "urdfdom=4.0.*" -y` |
-| `undefined symbol: _ZN10pinocchio*` 等 mangled 名字 | 主版本对得上、但 conda-forge 不同 build 串号之间 ABI 漂移 | 先 `conda update --all -c conda-forge` 把 env 拉到当前快照，再按上一行 pin 死小版本 |
-| `GLIBCXX_3.4.30 not found` / `GOMP_*` not found | 进程链到了系统 gcc 的旧 `libstdc++` / `libgomp`，没用 env 内的 | 重新 `conda activate <env>`；仍报错则 `conda install -c conda-forge libstdcxx-ng libgomp` 把运行库强制拉进 env |
-| `UnsatisfiableError` 装 `compilers` 时 | 既存 env 跨 channel 锁住了 toolchain | `conda install -c conda-forge --strict-channel-priority compilers cmake ninja eigen boost pkg-config`；仍解不开就回到上面流程开一个干净的 `oneroarm_cpp` |
-
-> 不要把 `liboneroarm.so` 同时丢进多个 env、再用 `LD_LIBRARY_PATH` 跨 env 拉。SDK 的 BUILD_RPATH 已锁死自身目录，跨 env 极易引入第二份 `libpinocchio_*` / `libhpp-fcl` 与 SONAME 不一致而段错误。
-
-## 编译 C / C++（Windows）
-
-`CMakeLists.txt` 同样自动检出 `windows/windows-x86_64`：
+Windows x86_64 在 Visual Studio 2022 开发者终端可配置：
 
 ```cmd
-cmake .. -G "Visual Studio 17 2022" -A x64
-cmake --build . --config Release
-
-:: 把 oneroarm.dll 与 conda env 里的传递依赖加入 PATH 后运行
-set PATH=%cd%\..\..\c++\windows\windows-x86_64;%CONDA_PREFIX%\Library\bin;%PATH%
-.\Release\full_demo_cpp.exe
+cmake -S demo -B demo\build -G "Visual Studio 17 2022" -A x64
+cmake --build demo\build --config Release
 ```
 
-## 跑 Python demo
+运行前将 SDK DLL 目录及 Conda 环境的 Library/bin 加入 PATH。实际生成目标与平台特例以 [CMakeLists.txt](CMakeLists.txt) 为准。
+
+## 三、运行 Python 示例
+
+先按 [Python 安装说明](../python/README.md)安装匹配的 wheel 或 Conda 包。无硬件接口检查可运行：
 
 ```bash
-conda create -n oneroarm python=3.12 -y
-conda activate oneroarm
-conda install -c conda-forge -c ./python/conda_channel/linux oneroarm -y
-
-python demo/python/full_demo.py
-python demo/python/movej_demo.py
-python demo/python/movep_demo.py
-python demo/python/movel_demo.py
-python demo/python/buffered_traj_demo.py
-python demo/python/can_frame_demo.py
-python demo/python/drag_teaching_demo.py
+python demo/python/advanced/frame_transform.py
 ```
 
-## 无硬件下的预期行为
-
-所有 demo 都会先打印 `OneroCore Hardware Initialization` 横幅，然后报：
-
-```
-Error opening serial port (/dev/ttyACM0): open: No such file or directory ...
-[X] 串口未连接: /dev/ttyACM0 (设备不存在)
-```
-
-`onero_create_robot` / `OneroArm` 构造仍返回非空句柄（设计如此）；`enable_motors` 进入跳过分支
-返回失败码，`movej` 打印 `[MoveJ] target_joints: [...]` 后阻塞等响应——这是预期的"无硬件"路径，
-按 `Ctrl-C` 终止即可。
-
-## 路径覆盖示例
-
-零配置（推荐）：留 `cfg.model_description_path = ""`，SDK 通过 `dladdr` 解析到内置
-`oneroarm_description`（`<libdir>/../share/oneroarm_description/`）。
-
-显式覆盖（按优先级递减）：
-
-```cpp
-// 1. 进程内
-std::strcpy(cfg.model_description_path, "/custom/oneroarm_description");
-```
+运行机械臂示例前，请在各脚本内按实物配置设备、机型、安装方向和位姿目标。然后在 SDK 根目录选择一个脚本单独运行，例如：
 
 ```bash
-# 2. 环境变量（同时被 SDK 与外部工具读取）
-export ONERO_DESCRIPTION_PATH=/custom/oneroarm_description
+python demo/python/movej.py
 ```
 
-需要把内置 URDF 喂给外部工具（RViz / MuJoCo / 自研 viewer）时：
+这些脚本会调用真实运动接口；MoveJ/L/P/C 的返回码须与反馈一起解释，ServoJ/P 更新返回 0 只表示 SDK 接受目标。安装成功、纯计算 Frame 通过，都不等于机械臂真机运动通过。
 
-```python
-import os, oneroarm
-desc = os.path.join(os.path.dirname(oneroarm.__file__),
-                    "share", "oneroarm_description")
-```
+## 四、常见问题
+
+| 现象 | 检查 |
+|---|---|
+| 配置时报 no SDK binary | 当前平台没有匹配的 c/ 或 c++/ 动态库；见根目录平台表 |
+| 运行时报 liboneroarm.so 或传递依赖找不到 | 配好库搜索路径与本版本匹配的 Pinocchio 3.8、Coal 3.0.1、urdfdom 4.0.1 等运行库 |
+| Windows 找不到 DLL | 把 SDK DLL 与环境 Library/bin 放入进程 DLL 搜索路径 |
+| 串口不存在或无法打开 | 非仿真配置下创建应失败；检查设备路径、权限、占用和波特率，不会自动回退默认串口 |
+| 运动返回负数 | 查看错误码、状态标志与实际反馈；目标位姿、路径预检和限位都可能导致拒绝 |
+| 同一会话第二个命令返回 BUSY | 等待当前命令结束，或按接口生命周期受控停止后再发送 |
+
+资源默认按动态库或 Python 扩展所在路径定位 share/oneroarm_description；如使用自定义模型，请用 model_description_path 或 ONERO_DESCRIPTION_PATH 显式配置，并核对实际负载与安装方向。

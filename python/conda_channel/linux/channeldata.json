@@ -1,0 +1,46 @@
+{
+  "channeldata_version": 1,
+  "packages": {
+    "oneroarm": {
+      "activate.d": false,
+      "binary_prefix": false,
+      "deactivate.d": false,
+      "license": "MIT",
+      "post_link": false,
+      "pre_link": false,
+      "pre_unlink": false,
+      "run_exports": {},
+      "subdirs": [
+        "linux-64",
+        "linux-aarch64"
+      ],
+      "summary": "OneroArm Python API",
+      "text_prefix": false,
+      "timestamp": 1791429046,
+      "version": "1.2.1"
+    },
+    "onerogripper": {
+      "activate.d": false,
+      "binary_prefix": false,
+      "deactivate.d": false,
+      "license": "MIT",
+      "post_link": false,
+      "pre_link": false,
+      "pre_unlink": false,
+      "run_exports": {},
+      "subdirs": [
+        "linux-64",
+        "linux-aarch64"
+      ],
+      "summary": "Onero standalone gripper SDK (no rbdl/pinocchio/eigen)",
+      "text_prefix": false,
+      "timestamp": 1791431670,
+      "version": "1.2.1"
+    }
+  },
+  "subdirs": [
+    "linux-64",
+    "linux-aarch64",
+    "noarch"
+  ]
+}

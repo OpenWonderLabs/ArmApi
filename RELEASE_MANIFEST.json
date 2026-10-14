@@ -1,0 +1,186 @@
+{
+  "schema_version": 1,
+  "sdk_version": "1.2.1",
+  "release_status": "release",
+  "toolchain": {
+    "linux_c_cxx": "Linux x86_64/arm64: GCC/G++ 15.3.0 (Conda Forge build toolchain)",
+    "windows_c_cxx": "MSVC 2022 x64",
+    "python": "CPython 3.10-3.13 for Conda; CPython 3.12 for standalone wheel",
+    "gripper_python_wheel": "GCC/G++ 15.3.0; CPython 3.12.14; pybind11 3.1.0; scikit-build-core 1.0.3; auditwheel 6.8.2",
+    "arm_python_wheel": "GCC/G++ 15.3.0; CPython 3.12.14; pybind11 3.1.0; scikit-build-core 1.0.3; auditwheel 6.8.2",
+    "linux_riscv64_c_cxx": "riscv64-linux-gnu-g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+    "linux_riscv64_python": "Ubuntu 24.04 riscv64; CPython 3.12.3; repaired arm extension cross-compiled from current source, gripper extension previously built under QEMU user mode"
+  },
+  "runtime_dependencies": {
+    "Boost": "1.88.0",
+    "Coal": "3.0.1",
+    "Pinocchio": "3.8.0",
+    "urdfdom": "4.0.1",
+    "SDFormat": "14.8.0",
+    "Assimp": "5.4.3",
+    "OctoMap": "1.10.1",
+    "OpenSSL": "3"
+  },
+  "artifacts": {
+    "arm_c_cpp": [
+      "c/linux/linux-x86_64/liboneroarm.so",
+      "c++/linux/linux-x86_64/liboneroarm.so",
+      "c/linux/linux-arm64/liboneroarm.so",
+      "c++/linux/linux-arm64/liboneroarm.so",
+      "c/windows/windows-x86_64/oneroarm.dll",
+      "c/windows/windows-x86_64/oneroarm.lib",
+      "c++/windows/windows-x86_64/oneroarm.dll",
+      "c++/windows/windows-x86_64/oneroarm.lib",
+      "c/linux/linux-riscv64/liboneroarm.so",
+      "c++/linux/linux-riscv64/liboneroarm.so"
+    ],
+    "gripper_c_cpp": [
+      "gripper/c/linux/linux-x86_64/libonerogripper.so",
+      "gripper/c++/linux/linux-x86_64/libonerogripper.so",
+      "gripper/c/linux/linux-arm64/libonerogripper.so",
+      "gripper/c++/linux/linux-arm64/libonerogripper.so",
+      "gripper/c/windows/windows-x86_64/onerogripper.dll",
+      "gripper/c/windows/windows-x86_64/onerogripper.lib",
+      "gripper/c++/windows/windows-x86_64/onerogripper.dll",
+      "gripper/c++/windows/windows-x86_64/onerogripper.lib",
+      "gripper/c/linux/linux-riscv64/libonerogripper.so",
+      "gripper/c++/linux/linux-riscv64/libonerogripper.so"
+    ],
+    "standalone_wheels": [
+      "python/wheels/linux-x86_64",
+      "gripper/python/wheels/linux-x86_64",
+      "python/wheels/linux-riscv64",
+      "gripper/python/wheels/linux-riscv64"
+    ],
+    "conda_channels": [
+      "python/conda_channel/linux",
+      "python/conda_channel/windows"
+    ]
+  },
+  "unavailable_artifacts": [],
+  "validation_scope": {
+    "offline": "四平台 suite 5 通过：60 次 NumPy 导入顺序检查、88 次超时恢复、132 次运动中换目标、88 次运动中停止；三个原生平台，RISC-V QEMU。 No physical hardware tested.",
+    "not_completed": [
+      "Real hardware I/O and motion",
+      "Full MoveL/MoveP/MoveC/ServoP execution paths",
+      "Real-hardware ServoJ tracking and settling",
+      "Fresh full functional checks for Conda Python 3.10/3.11/3.13",
+      "RISC-V physical-board/native-kernel validation and compatibility beyond Ubuntu 24.04 riscv64/CPython 3.12"
+    ],
+    "completed": [
+      "Suite 5 passed with fresh artifacts/inputs/logs and actual dependency inventory; native x86_64/arm64/Windows, RISC-V QEMU."
+    ]
+  },
+  "platforms": [
+    {
+      "os": "linux",
+      "architecture": "x86_64",
+      "validated_distribution": [
+        "Ubuntu 22.04.5 LTS"
+      ],
+      "c_cpp": true,
+      "python_wheel": "CPython 3.12",
+      "conda": "CPython 3.10-3.13",
+      "validation_status": "passed offline suite 5; native; no hardware"
+    },
+    {
+      "os": "linux",
+      "architecture": "arm64",
+      "validated_distribution": [
+        "Ubuntu 22.04.5 LTS"
+      ],
+      "c_cpp": true,
+      "python_wheel": null,
+      "conda": "CPython 3.10-3.13",
+      "validation_status": "passed offline suite 5; native; no hardware"
+    },
+    {
+      "os": "windows",
+      "architecture": "x86_64",
+      "validated_distribution": [
+        "Windows 2022Server"
+      ],
+      "c_cpp": true,
+      "python_wheel": null,
+      "conda": "CPython 3.10-3.13",
+      "validation_status": "passed offline suite 5; native; no hardware"
+    },
+    {
+      "os": "linux",
+      "architecture": "riscv64",
+      "target_distribution": [
+        "Ubuntu 24.04"
+      ],
+      "c_cpp": true,
+      "python_wheel": "CPython 3.12",
+      "conda": null,
+      "validation_status": "passed offline suite 5; QEMU user mode; no hardware",
+      "execution_mode": "QEMU user mode on x86_64",
+      "validated_distribution": [
+        "Ubuntu 24.04.5 LTS"
+      ]
+    }
+  ],
+  "build_revision": "1.2.1-runtime-interop-suite5-20261012",
+  "wheel_build_tag": "5",
+  "wheel_cpp_runtime": "Standard ELF SONAMEs libstdc++.so.6/libgcc_s.so.1; identical providers in both wheel modules; reuse a compatible provider already loaded by NumPy.",
+  "tested_environment_locks": {
+    "linux-x86_64": {
+      "file": "python/environments/linux-x86_64-py312-explicit.txt",
+      "sha256": "1d5768434e0dfa29c79a72a19ed880b36145de34baf6b2bda288314c60b0e764",
+      "package_count": 109,
+      "native_environment_match": true
+    },
+    "linux-arm64": {
+      "file": "python/environments/linux-arm64-py312-explicit.txt",
+      "sha256": "c660514b53ffc75e94ea08d06431fb460c47320b53a65a50055496009c1ddacb",
+      "package_count": 109,
+      "native_environment_match": true
+    },
+    "windows-x86_64": {
+      "file": "python/environments/windows-x86_64-py312-explicit.txt",
+      "sha256": "57b52e245ec79474654e33cbfcdf08730c80348749df0651c668467f94a48a43",
+      "package_count": 86,
+      "native_environment_match": true
+    }
+  },
+  "packaging_revision": "1.2.1",
+  "platform_runtime_dependencies": {
+    "linux-riscv64": {
+      "Pinocchio": "3.8.0",
+      "hpp-fcl": "2.4.5",
+      "system_libraries": "Ubuntu 24.04 riscv64 apt packages; see RISC_V_GUIDE.md",
+      "bundled_runtime": "runtime/linux-riscv64/lib"
+    }
+  },
+  "riscv_delivery": {
+    "guide": "RISC_V_GUIDE.md",
+    "status": "Offline suite 5 passed under QEMU user mode; native board out of scope",
+    "execution_mode": "QEMU user mode"
+  },
+  "runtime_dependencies_scope": [
+    "linux-x86_64",
+    "linux-arm64",
+    "windows-x86_64"
+  ],
+  "gripper_wheel_build_tag": "3",
+  "package_builds": {
+    "arm_conda": 5,
+    "arm_wheel": 5,
+    "gripper_conda": 3,
+    "gripper_wheel": 3
+  },
+  "release_changes": [
+    "修复 ServoJ 运动中停止异常及制动速度反复换向",
+    "明确停止和取消接口的返回语义",
+    "修复 ServoJ 运动中切换目标异常超调，保留连续指令状态并检查路径及制动包络限位",
+    "修复 NumPy 与 wheel 导入顺序的 C++ 运行库冲突",
+    "补充超时制动恢复与 NumPy 联合导入回归，自动记录实际依赖"
+  ],
+  "build_provenance": {
+    "details": "Arm runtime rebuilt with local Ruckig Community 0.15.3 moving-target planning; standalone gripper unchanged. Source and build records retained separately."
+  },
+  "statically_integrated_components": {
+    "Ruckig": "Community 0.15.3, local C++17 state-to-state planning; no cloud client or consumer runtime dependency"
+  }
+}

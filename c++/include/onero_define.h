@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 OneRobotics (Shenzhen) Co., Ltd.
 
+#ifndef ONERO_API_SHARED_DEFINE_H
+#define ONERO_API_SHARED_DEFINE_H
+
 #pragma once
 
 #include <stdint.h>
@@ -15,8 +18,10 @@ typedef bool (*onero_interrupt_check_fn)(void* ctx);
 
 // 用户自定义 CAN 帧回调签名：(can_id, payload, len)。
 // payload 仅在回调期间有效；len ∈ [0, 8]。
-// 该回调将在 SDK 接收路径（即调用方运动控制线程）上同步执行；
-// 回调内禁止重入任何 SDK 发送/运动控制方法，否则可能造成自锁。
+// 该回调在所属 DeviceSession 的独立 callback worker 上执行，不占用
+// BusExecutor。SDK 使用 64 项有界 FIFO；满时丢弃最旧的未开始用户帧。
+// 回调内仍只支持 register/clear callback；其它 SDK 业务调用的重入语义不属于
+// v1 契约。dispatcher 内部允许 callback 捕获的最后 owner 在回调返回路径释放。
 using CanFrameCallback =
     std::function<void(uint16_t can_id, const uint8_t* payload, uint8_t len)>;
 
@@ -65,12 +70,20 @@ inline PDGains GetPDGains7DOF() {
 
 // Robot handle (opaque pointer)
 typedef struct onero_robot_handle onero_robot_handle;
-typedef struct onero_drag_teaching_handle onero_drag_teaching_handle;
+struct onero_drag_teaching_handle;
 
 enum class DragTeachingState : int {
     IDLE = 0,
     RECORDING = 1,
     REPLAYING = 2,
+};
+
+// Optional gripper channel used by drag teaching.  The gripper remains a
+// separate percent-space actuator; it is never counted as an arm DOF.
+enum class GripperTeachingMode : int {
+    DISABLED = 0,
+    POSITION = 1,
+    BACKDRIVE = 2,
 };
 
 // Move API result codes
@@ -132,6 +145,136 @@ struct Pose {
     double qw, qx, qy, qz;  // Quaternion orientation
 };
 
+// Cartesian reference frames used by the frame-aware helpers.  BASE and
+// WORLD are fixed frames. TOOL is the TCP frame captured at command start and
+// therefore always requires an explicit/current base_T_tool anchor.
+enum class CartesianFrame : uint8_t {
+    BASE = 0,
+    WORLD = 1,
+    TOOL = 2,
+};
+
+// Rigid transform parent_T_child (metres, quaternion wxyz).
+struct RigidTransform {
+    double x = 0.0;
+    double y = 0.0;
+    double z = 0.0;
+    double qw = 1.0;
+    double qx = 0.0;
+    double qy = 0.0;
+    double qz = 0.0;
+};
+
+// Six-DoF Cartesian increment.  Translation is expressed in the selected
+// frame; rotation is left-composed for BASE/WORLD and right-composed for TOOL.
+struct CartesianDelta {
+    double x = 0.0;
+    double y = 0.0;
+    double z = 0.0;
+    double qw = 1.0;
+    double qx = 0.0;
+    double qy = 0.0;
+    double qz = 0.0;
+};
+
+// Immutable-by-value frame parameters captured at a command boundary.  A
+// missing world transform is represented explicitly and must fail closed.
+struct FrameSnapshot {
+    bool has_world_from_base = false;
+    RigidTransform world_from_base{};  // ^W T_B
+    RigidTransform flange_from_tool{}; // ^F T_TCP
+};
+
+// Runtime Cartesian soft limits for ServoP. Translation and rotation use
+// separate scalar norm limits because their units are different. These values
+// are requests from the caller; OneroCore always intersects them with its
+// built-in model limits before generating a command.
+struct CartesianServoLimits {
+    double max_linear_velocity = 0.1;       // m/s
+    double max_angular_velocity = 0.5;      // rad/s
+    double max_linear_acceleration = 0.2;   // m/s^2
+    double max_angular_acceleration = 1.0;  // rad/s^2
+};
+
+enum class ServoPState : int {
+    IDLE = 0,
+    RUNNING = 1,
+    LIMIT_TRANSITION = 2,
+    BRAKING = 3,
+    HOLDING = 4,
+    FAULT = 5,
+};
+
+enum ServoPLimitFlag : uint32_t {
+    SERVOP_LIMIT_NONE = 0,
+    SERVOP_LIMIT_CARTESIAN_VELOCITY = 1u << 0,
+    SERVOP_LIMIT_CARTESIAN_ACCELERATION = 1u << 1,
+    SERVOP_LIMIT_JOINT_POSITION = 1u << 2,
+    SERVOP_LIMIT_JOINT_VELOCITY = 1u << 3,
+    SERVOP_LIMIT_JOINT_ACCELERATION = 1u << 4,
+    SERVOP_LIMIT_SINGULARITY = 1u << 5,
+    SERVOP_LIMIT_COMMAND_TIMEOUT = 1u << 6,
+    SERVOP_LIMIT_FEEDBACK_STALE = 1u << 7,
+};
+
+struct ServoPStatus {
+    ServoPState state = ServoPState::IDLE;
+    uint64_t accepted_sequence = 0;
+    uint64_t applied_sequence = 0;
+    double command_age_s = 0.0;
+    CartesianServoLimits requested_limits;
+    CartesianServoLimits effective_limits;
+    double joint_feasibility_scale = 1.0;
+    uint32_t limit_flags = SERVOP_LIMIT_NONE;
+    int last_error = 0;
+    Pose target_pose{0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0};
+    Pose actual_pose{0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0};
+};
+
+// Per-joint ServoJ limits. max_velocity is a symmetric magnitude limit applied
+// to both velocity directions. Empty vectors request the core's configured
+// hard limits. Non-empty vectors must contain exactly dof finite positive
+// values and are intersected with those hard limits.
+struct JointServoLimits {
+    JointArray max_velocity;
+    JointArray max_acceleration;
+    JointArray max_jerk;
+};
+
+enum class ServoJState : int {
+    IDLE = 0,
+    RUNNING = 1,
+    BRAKING = 2,
+    HOLDING = 3,
+    FAULT = 4,
+};
+
+enum ServoJLimitFlag : uint32_t {
+    SERVOJ_LIMIT_NONE = 0,
+    SERVOJ_LIMIT_COMMAND_TIMEOUT = 1u << 0,
+    SERVOJ_LIMIT_FEEDBACK_STALE = 1u << 1,
+    SERVOJ_LIMIT_JOINT_POSITION = 1u << 2,
+    SERVOJ_LIMIT_OTG_INFEASIBLE = 1u << 3,
+    SERVOJ_LIMIT_DEADLINE_MISS = 1u << 4,
+};
+
+struct ServoJStatus {
+    ServoJState state = ServoJState::IDLE;
+    uint64_t accepted_sequence = 0;
+    uint64_t applied_sequence = 0;
+    uint64_t sent_frame_count = 0;
+    uint64_t deadline_miss_count = 0;
+    uint64_t otg_update_count = 0;
+    uint64_t otg_replan_count = 0;
+    double command_age_s = 0.0;
+    uint32_t limit_flags = SERVOJ_LIMIT_NONE;
+    int last_error = 0;
+    JointArray target_q;
+    JointArray commanded_q;
+    JointArray commanded_dq;
+    JointArray commanded_ddq;
+};
+
 // Arm state from motors (position with zero bias, velocity and torque without)
 struct ArmStateFromMotor {
     JointArray positions;   // Joint positions (rad) with zero bias applied
@@ -178,3 +321,5 @@ struct TrajectoryPoint {
     JointArray acceleration;  // Joint accelerations (rad/s²)
 };
 }  // namespace onero_api
+
+#endif  // ONERO_API_SHARED_DEFINE_H

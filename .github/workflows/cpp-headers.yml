@@ -1,0 +1,23 @@
+name: Check public C++ headers
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  headers:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, windows-2022]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+      - name: Compile separate and combined headers with distinct timestamps
+        run: python tools/check_cpp_headers.py
+      - name: Require unchanged SDK files
+        run: git diff --exit-code
