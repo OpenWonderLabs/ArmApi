@@ -1,0 +1,249 @@
+.github/workflows/cpp-headers.yml
+  s_2ad86879c2c52c::t_b04c760db67dc5 1-23
+.github/workflows/release-validation.yml
+  s_2ad86879c2c52c::t_1d4afa4b2d5427 1-190
+.gitignore
+  s_2ad86879c2c52c::t_e2575035f35456 10,21-22
+LICENSES/NOTICE
+  s_2ad86879c2c52c::t_42d7025bf9f2cd 1,4-31
+LICENSES/third_party/Assimp.LICENSE
+  s_2ad86879c2c52c::t_7d2eda6b706d82 1-78
+LICENSES/third_party/Coal.LICENSE
+  s_2ad86879c2c52c::t_a2694b6af04cce 1-34
+LICENSES/third_party/GCC-Runtime-Library-Exception.txt
+  s_2ad86879c2c52c::t_083d0235242492 1-73
+LICENSES/third_party/GPL-3.txt
+  s_2ad86879c2c52c::t_399411f53bd540 1-674
+LICENSES/third_party/LLVM-OpenMP.LICENSE
+  s_2ad86879c2c52c::t_221c7734801877 1-361
+LICENSES/third_party/OctoMap.LICENSE
+  s_2ad86879c2c52c::t_c19e7a4cda54d6 1-31
+LICENSES/third_party/OpenSSL.LICENSE
+  s_2ad86879c2c52c::t_d74f31b9e0d549 1-177
+LICENSES/third_party/Pinocchio.LICENSE
+  s_2ad86879c2c52c::t_f6da49ec5e8d37 3-5,7-8,10-11,13-15,17-19
+LICENSES/third_party/Qhull.LICENSE
+  s_2ad86879c2c52c::t_6124277a13cbb3 1-39
+LICENSES/third_party/Ruckig.LICENSE
+  s_2ad86879c2c52c::t_de2f5891bc4b81 1-21
+LICENSES/third_party/SDFormat.LICENSE
+  s_2ad86879c2c52c::t_a643c1c1917c7c 1-178
+LICENSES/third_party/TinyXML2.LICENSE
+  s_2ad86879c2c52c::t_3d73118a5e53ac 1-18
+LICENSES/third_party/console_bridge.LICENSE
+  s_2ad86879c2c52c::t_7802d9bec2a21c 1-25
+LICENSES/third_party/gz-math.LICENSE
+  s_2ad86879c2c52c::t_0fd1e31fe8c427 1-178
+LICENSES/third_party/gz-utils.LICENSE
+  s_2ad86879c2c52c::t_49dbd3940ddf64 1-235
+LICENSES/third_party/urdfdom.LICENSE
+  s_2ad86879c2c52c::t_2dd07aba881907 1-33
+LICENSES/third_party/zlib.LICENSE
+  s_2ad86879c2c52c::t_a008dec0a30d97 1-22
+MAINTAINERS.md
+  s_2ad86879c2c52c::t_afded6bedd7e08 1-16
+README.md
+  s_2ad86879c2c52c::t_7d9fb1dd7f27b5 1,3,5,7,9-12,14,16-21,23,25,27,30,32,34-46,48,50,52,54,56,58-60,62,64,66-76,78,80,82,84-94,96,98,100,102,104,106-126,128,130,132,134,136,138,140,142,144,146,148-152,154,157,159,161,163
+RELEASE_MANIFEST.json
+  s_2ad86879c2c52c::t_cc17710a450105 1-186
+RELEASE_NOTES.md
+  s_2ad86879c2c52c::t_06aa3b2ec07884 1-53
+RISC_V_GUIDE.md
+  s_2ad86879c2c52c::t_767903e608f0c1 1-69
+SHA256SUMS
+  s_2ad86879c2c52c::t_42dd1c460b9bb7 1-253
+VERSION
+  s_2ad86879c2c52c::t_4da7b7a6985dad 1
+c++/README.md
+  s_2ad86879c2c52c::t_70cdd1e5c81310 3-4,15-16,27,44,46-53,55,59,61,66-68,71-72,74-77,80,82,85,87-88,91,95,139,259-260,268,273-304,354,359-361,367,380-383,389,395-397,411,425-426,436-437,446,492,567,572,578-594
+c++/include/onero_define.h
+  s_2ad86879c2c52c::t_4fb73cff9661c4 4-6,21-24,73,81-88,148-277,324-325
+c++/include/onero_interface_cpp.h
+  s_2ad86879c2c52c::t_d0f2831d7fdc55 30-50,56-58,75,91,186-242,264-266,319-322,336-338,343-344,392-397,403-428
+c++/share/oneroarm_description/urdf/A1/a1_l.urdf.xacro
+  s_2ad86879c2c52c::t_3a5742b1658e10 1-540
+c++/share/oneroarm_description/urdf/A1/a1_r.urdf.xacro
+  s_2ad86879c2c52c::t_44095bde271443 1-521
+c/README.md
+  s_2ad86879c2c52c::t_59a8930b23c290 3-4,21,27,29-35,37,41,43,45-49,52-53,56-58,60,62,64-69,71,73,77,136,143,242,263-267,270-271,324,328,334,347-350,356,360-365,372,386-387,396,446,473-474,521,524,529-568
+c/include/onero_interface_c.h
+  s_2ad86879c2c52c::t_0856c1b7f0e519 94-210,270-281,297,305-306,325,391-416,432-487,580-584,608-611,615-616,645-647,654-655,686-687,696-720
+c/share/oneroarm_description/urdf/A1/a1_l.urdf.xacro
+  s_2ad86879c2c52c::t_dece738fb4a659 1-540
+c/share/oneroarm_description/urdf/A1/a1_r.urdf.xacro
+  s_2ad86879c2c52c::t_28e0375ed2ddfc 1-521
+demo/CMakeLists.txt
+  s_2ad86879c2c52c::t_383ce92f1518ba 23,27-31,34,37,40,44-55,95-98,102,115-128,130-151
+demo/README.md
+  s_2ad86879c2c52c::t_64584437893185 1,3,5-7,9,11-21,23,25,27,29,31,34-35,38,40,43-44,47,49,51,54-55,58,60,62,65-66,69,71,73,75-76,79,82,85,87-98
+demo/c/frame_demo.c
+  s_2ad86879c2c52c::t_9d6a4f84eccf30 1-17
+demo/c/new_motion_demo.c
+  s_2ad86879c2c52c::t_9b8dd5c48e5f5d 1-28
+demo/c/servoj_demo.c
+  s_2ad86879c2c52c::t_e4aac407b5b9b2 1-123
+demo/c/servop_demo.c
+  s_2ad86879c2c52c::t_194ecac5c8242c 1-132
+demo/cpp/frame_demo.cpp
+  s_2ad86879c2c52c::t_ef82d8bacbe4b2 1-13
+demo/cpp/new_motion_demo.cpp
+  s_2ad86879c2c52c::t_54d4ef5e456301 1-27
+demo/cpp/servoj_demo.cpp
+  s_2ad86879c2c52c::t_b830ed30829072 1-214
+demo/cpp/servop_demo.cpp
+  s_2ad86879c2c52c::t_41d4ffb0b14901 1-128
+demo/python/.gitignore
+  s_2ad86879c2c52c::t_d1fd03186558a0 1-3
+demo/python/README.md
+  s_2ad86879c2c52c::t_d5cba84083c4a3 1-64
+demo/python/advanced/buffered_motion.py
+  s_2ad86879c2c52c::t_23d829b31717f3 1-69
+demo/python/advanced/cancel_motion.py
+  s_2ad86879c2c52c::t_397360c2b9580f 1,3-4,7-8,10,13-15,18-20,24-33,35-68,70-71
+demo/python/advanced/drag_teaching.py
+  s_2ad86879c2c52c::t_5ad80d7d1d3a67 1-87
+demo/python/advanced/dual_arm_drag_teaching.py
+  s_2ad86879c2c52c::t_6fbe78f4bb8663 1,3,11,14-17,20,24-62,67,70-71,74-93,95-124,128-130
+demo/python/advanced/frame_transform.py
+  s_2ad86879c2c52c::t_0fda03c960f855 1-60
+demo/python/advanced/gripper.py
+  s_2ad86879c2c52c::t_89d5706b7b3dd5 1-59
+demo/python/advanced/joint_trajectory.py
+  s_2ad86879c2c52c::t_2571163b1f8a54 1-93
+demo/python/advanced/lifecycle.py
+  s_2ad86879c2c52c::t_3dd7f1140a791b 1-44
+demo/python/advanced/mit_control.py
+  s_2ad86879c2c52c::t_dd158d7182743a 1-83
+demo/python/advanced/raw_can.py
+  s_2ad86879c2c52c::t_3e23c66695af23 1,3,6,9-13,16-18,22-27,29-30,32-34,36,38-43,45-47
+demo/python/dual_arm_motion.py
+  s_2ad86879c2c52c::t_586a2bb54ec0ba 1,3-4,7-8,13,20-27,30-32,35-39,41,43-45,47-48,50-64,66-67,72,74-77,79-81,83-113,115-118
+demo/python/movec.py
+  s_2ad86879c2c52c::t_570b72a87c352d 1-70
+demo/python/movej.py
+  s_2ad86879c2c52c::t_ed48383f555a35 1-48
+demo/python/movel.py
+  s_2ad86879c2c52c::t_cf00c3caf3750b 1,6-8,11-13,16-19,22-31,33-39,41-42
+demo/python/movep.py
+  s_2ad86879c2c52c::t_1f935cc39cf67e 1,6-8,11-13,16-19,23-31,33-39,41-42
+demo/python/servoj.py
+  s_2ad86879c2c52c::t_b156e15f70fd4b 1-85
+demo/python/servop.py
+  s_2ad86879c2c52c::t_7ed0398893fe86 1-3,5,9-12,15-17,20-30,33-42,46-61,63-94,96-101
+gripper/README.md
+  s_2ad86879c2c52c::t_be6290c419cfa0 1-11
+gripper/c++/README.md
+  s_2ad86879c2c52c::t_3239c87c69b71b 1-248
+gripper/c++/include/onero_define.h
+  s_2ad86879c2c52c::t_cd991cb7408687 1-325
+gripper/c++/include/onero_gripper.h
+  s_2ad86879c2c52c::t_723cc0f2a5cfd4 1-62
+gripper/c/README.md
+  s_2ad86879c2c52c::t_6af1c7fa591275 1-212
+gripper/c/include/onero_gripper_c.h
+  s_2ad86879c2c52c::t_8b6662474dd2de 1-55
+gripper/demo/cpp_offline_check.cpp
+  s_2ad86879c2c52c::t_1639d137e1ed31 1-10
+gripper/python/README.md
+  s_2ad86879c2c52c::t_00018258da0162 1-26
+gripper/python/onerogripper.pyi
+  s_2ad86879c2c52c::t_b13b607d9201be 1-37
+python/README.md
+  s_2ad86879c2c52c::t_0baaf1bd6ec4ca 3-4,17-18,26,42-48,50,54,56,59-60,63,65,67,69,71-73,76,107,124-125,134,177,231-241,244-254,257-270,291,300-303,309,315-317,327-330,355-356,359,373,409,429,431,469-470,477-497
+python/conda_channel/README.md
+  s_2ad86879c2c52c::t_2333954ab36bb9 1-22
+python/conda_channel/linux/channeldata.json
+  s_2ad86879c2c52c::t_4aa50cc8199340 1-46
+python/conda_channel/linux/index.html
+  s_2ad86879c2c52c::t_a07d6f92f8fc4e 1-6
+python/conda_channel/linux/linux-64/index.html
+  s_2ad86879c2c52c::t_dfe5938608c07d 1-11
+python/conda_channel/linux/linux-64/repodata.json
+  s_2ad86879c2c52c::t_f33eb2c050d615 1-181
+python/conda_channel/linux/linux-64/repodata_from_packages.json
+  s_2ad86879c2c52c::t_7aac3b25def29d 1-181
+python/conda_channel/linux/linux-aarch64/index.html
+  s_2ad86879c2c52c::t_4a41725e74f47b 1-11
+python/conda_channel/linux/linux-aarch64/repodata.json
+  s_2ad86879c2c52c::t_cb18f8a6f3c25f 1-181
+python/conda_channel/linux/linux-aarch64/repodata_from_packages.json
+  s_2ad86879c2c52c::t_30b97fbacde17f 1-181
+python/conda_channel/linux/noarch/index.html
+  s_2ad86879c2c52c::t_094335c88eeaa9 1-6
+python/conda_channel/linux/noarch/repodata.json
+  s_2ad86879c2c52c::t_dc9f8686dbad97 1-9
+python/conda_channel/linux/noarch/repodata_from_packages.json
+  s_2ad86879c2c52c::t_1cf885ab489e8c 1-9
+python/conda_channel/windows/channeldata.json
+  s_2ad86879c2c52c::t_569613e9d42916 1-43
+python/conda_channel/windows/index.html
+  s_2ad86879c2c52c::t_34062708ec1183 1-6
+python/conda_channel/windows/noarch/index.html
+  s_2ad86879c2c52c::t_46b55701406256 1-6
+python/conda_channel/windows/noarch/repodata.json
+  s_2ad86879c2c52c::t_eb59ae409eadcf 1-9
+python/conda_channel/windows/noarch/repodata_from_packages.json
+  s_2ad86879c2c52c::t_436d51cbbd9a39 1-9
+python/conda_channel/windows/win-64/index.html
+  s_2ad86879c2c52c::t_7102fa9ef4ba46 1-11
+python/conda_channel/windows/win-64/repodata.json
+  s_2ad86879c2c52c::t_5a1a3f13efd5cd 1-181
+python/conda_channel/windows/win-64/repodata_from_packages.json
+  s_2ad86879c2c52c::t_1fdbb9e6ac8520 1-181
+python/environments/README.md
+  s_2ad86879c2c52c::t_cf0711eed698f1 1-43
+python/environments/linux-arm64-py312-explicit.txt
+  s_2ad86879c2c52c::t_441fcb0b259b9b 1-110
+python/environments/linux-riscv64-ubuntu24.04-packages.tsv
+  s_2ad86879c2c52c::t_5612db2d039680 1-385
+python/environments/linux-x86_64-py312-explicit.txt
+  s_2ad86879c2c52c::t_7adb106c9bfb9c 1-110
+python/environments/windows-x86_64-py312-explicit.txt
+  s_2ad86879c2c52c::t_3966ad23d7f540 1-87
+python/oneroarm.pyi
+  s_2ad86879c2c52c::t_e6236d8cb1cf71 1-770
+runtime/README.md
+  s_2ad86879c2c52c::t_47f2cf2579f89d 1-13
+tools/README.md
+  s_2ad86879c2c52c::t_59c5d36ad02e3f 1-34
+tools/check_cpp_headers.py
+  s_2ad86879c2c52c::t_5b7e5d46123e5f 1-19,21-45,47-54,56-62
+tools/check_execution_evidence.py
+  s_2ad86879c2c52c::t_3f03b8faaee676 1-120
+tools/make_release_archive.py
+  s_2ad86879c2c52c::t_4738c8cb7a3d9a 1-65
+tools/numpy_import_regression.py
+  s_2ad86879c2c52c::t_22aa209bd5d169 1-69
+tools/promote_package_version.py
+  s_2ad86879c2c52c::t_d8625b11d06594 1-101
+tools/record_environment.py
+  s_2ad86879c2c52c::t_2f2c3c3a134cdc 1-32
+tools/servo_regression.py
+  s_2ad86879c2c52c::t_26377d58daa8f3 1-592
+tools/test_conda_html.py
+  s_2ad86879c2c52c::t_89cedb3302241c 1-30
+tools/test_release_checks.py
+  s_2ad86879c2c52c::t_5cc6e0cdf891b6 1-320
+tools/validate_platform.py
+  s_2ad86879c2c52c::t_b9718f80f20b01 1-389
+tools/verify_conda_html.py
+  s_2ad86879c2c52c::t_27026fc3d30b25 1-69
+tools/verify_release.py
+  s_2ad86879c2c52c::t_94c391882d7c6d 1-5,7-16,18-29,31-32,34-35,37-47,49-61,63-72,74-78,80-109,111-115,117-125,127-129,131-153,155-157,159-207,209-218,220-240,242-269,271-297,299-394,396-456,458-513
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5b9758b33da05b3d14ad47cbc96a06be2cca9dbd",
+  "prompts": {},
+  "sessions": {
+    "s_2ad86879c2c52c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a13894-7dcd-7cf1-999a-5f72b2576494",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "songan <songan@wondertechlabs.com>"
+    }
+  }
+}
